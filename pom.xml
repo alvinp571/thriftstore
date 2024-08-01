@@ -20,6 +20,8 @@
     </properties>
 
     <build>
+        <finalName>liquestore</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
