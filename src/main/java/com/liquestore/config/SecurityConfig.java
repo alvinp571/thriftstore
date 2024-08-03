@@ -24,6 +24,7 @@ public class SecurityConfig {
                                 .requestMatchers("/supervisor/**").permitAll()
                                 .requestMatchers("/manager/**").permitAll()
                                 .requestMatchers("/customer/**").permitAll()
+                                .requestMatchers("/employees/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable());

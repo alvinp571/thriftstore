@@ -9,7 +9,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
@@ -38,6 +37,7 @@ public class EmployeeModel {
 
     private String jadwal_libur;
 
+    private int offDay;
     private int workingHours;
     private BigInteger payPerHour;
     private int holidayPay;

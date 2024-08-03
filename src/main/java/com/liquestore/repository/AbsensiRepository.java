@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface AbsensiRepository extends JpaRepository<AbsensiModel, Integer> {
     List<AbsensiModel> getAbsensiByEmployeeid(int id);
+    List<AbsensiModel> findByEmployeeidOrderByTodaydateAsc(int id);
 }
