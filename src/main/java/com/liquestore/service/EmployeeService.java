@@ -3,9 +3,11 @@ package com.liquestore.service;
 import com.liquestore.constants.AttendanceStatus;
 import com.liquestore.dto.employee.DailyPayCalculation;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
+import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetPayDetailSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
 import com.liquestore.mapper.GetEmployeeListSchemaMapper;
+import com.liquestore.mapper.GetEmployeeSchemaMapper;
 import com.liquestore.mapper.GetPayDetailSchemaMapper;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.EmployeeModel;
@@ -34,12 +36,20 @@ public class EmployeeService {
     private final AbsensiRepository absensiRepository;
 
     private final GetEmployeeListSchemaMapper getEmployeeListSchemaMapper;
+    private final GetEmployeeSchemaMapper getEmployeeSchemaMapper;
     private final GetPayDetailSchemaMapper getPayDetailResponseMapper;
 
     public GetEmployeeListSchema getEmployeeList() {
         List<EmployeeModel> employeeList = employeeRepository.findAll(Sort.by("fullname"));
 
         return getEmployeeListSchemaMapper.map(employeeList);
+    }
+
+    public GetEmployeeSchema getEmployee(int id) {
+        EmployeeModel employee = employeeRepository.findById(id)
+                .orElseThrow(RuntimeException::new);
+
+        return getEmployeeSchemaMapper.map(employee);
     }
 
     public GetPayDetailSchema getPayDetail(int employeeId, int month, int year) {

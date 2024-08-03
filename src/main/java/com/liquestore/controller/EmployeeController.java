@@ -1,6 +1,7 @@
 package com.liquestore.controller;
 
 import com.liquestore.dto.employee.GetEmployeeListSchema;
+import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetPayDetailSchema;
 import com.liquestore.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,13 @@ public class EmployeeController {
     @GetMapping
     public ResponseEntity<GetEmployeeListSchema> getEmployeeList() {
         GetEmployeeListSchema outputSchema = employeeService.getEmployeeList();
+
+        return ResponseEntity.ok(outputSchema);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<GetEmployeeSchema> getEmployee(@PathVariable int id) {
+        GetEmployeeSchema outputSchema = employeeService.getEmployee(id);
 
         return ResponseEntity.ok(outputSchema);
     }
