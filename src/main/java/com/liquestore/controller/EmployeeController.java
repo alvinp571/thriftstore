@@ -1,7 +1,7 @@
 package com.liquestore.controller;
 
+import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetPayDetailSchema;
-import com.liquestore.repository.EmployeeRepository;
 import com.liquestore.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class EmployeeController {
     private final EmployeeService employeeService;
-    private final EmployeeRepository employeeRepository;
+
+    @GetMapping
+    public ResponseEntity<GetEmployeeListSchema> getEmployeeList() {
+        GetEmployeeListSchema outputSchema = employeeService.getEmployeeList();
+
+        return ResponseEntity.ok(outputSchema);
+    }
 
     @GetMapping("/{id}/pay-detail")
     public ResponseEntity<GetPayDetailSchema> getPayDetail(

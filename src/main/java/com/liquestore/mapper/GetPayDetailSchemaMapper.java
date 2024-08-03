@@ -11,7 +11,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Service
-public class GetPayDetailResponseMapper {
+public class GetPayDetailSchemaMapper {
     public GetPayDetailSchema map(List<GetPayDetailSchema.DailyPayDetail> dailyPayDetailList,
             MonthlyPayCalculation monthlyPayCalculation) {
         return GetPayDetailSchema.builder()

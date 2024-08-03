@@ -2,15 +2,18 @@ package com.liquestore.service;
 
 import com.liquestore.constants.AttendanceStatus;
 import com.liquestore.dto.employee.DailyPayCalculation;
+import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetPayDetailSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
-import com.liquestore.mapper.GetPayDetailResponseMapper;
+import com.liquestore.mapper.GetEmployeeListSchemaMapper;
+import com.liquestore.mapper.GetPayDetailSchemaMapper;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.repository.AbsensiRepository;
 import com.liquestore.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -30,7 +33,14 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final AbsensiRepository absensiRepository;
 
-    private final GetPayDetailResponseMapper getPayDetailResponseMapper;
+    private final GetEmployeeListSchemaMapper getEmployeeListSchemaMapper;
+    private final GetPayDetailSchemaMapper getPayDetailResponseMapper;
+
+    public GetEmployeeListSchema getEmployeeList() {
+        List<EmployeeModel> employeeList = employeeRepository.findAll(Sort.by("fullname"));
+
+        return getEmployeeListSchemaMapper.map(employeeList);
+    }
 
     public GetPayDetailSchema getPayDetail(int employeeId, int month, int year) {
         EmployeeModel employee = employeeRepository.findById(employeeId)
