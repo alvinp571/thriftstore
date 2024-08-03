@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
+import {alpha} from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -17,20 +17,31 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
+import {visuallyHidden} from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
-import { Autocomplete, Backdrop, Button, CssBaseline, Drawer, Fade, FormControl, Grid, InputLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
+import {
+  Autocomplete,
+  Backdrop,
+  Button,
+  CssBaseline,
+  Drawer,
+  Fade,
+  FormControl,
+  Grid,
+  Modal,
+  TextField
+} from '@mui/material';
 import SupervisorSidebar from './sidebar';
-import { AccountCircle, ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { addMonths, eachDayOfInterval, endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
-import { useAuth } from '../authContext';
+import {AccountCircle, ChevronLeft, ChevronRight} from '@mui/icons-material';
+import {addMonths, eachDayOfInterval, endOfMonth, format, startOfMonth, subMonths} from 'date-fns';
+import {useAuth} from '../authContext';
 
 const RootContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 `;
 
 const styleModal = {
@@ -47,21 +58,21 @@ const styleModal = {
 };
 
 const headCells = [
-  { id: 'tanggal', numeric: false, disablePadding: false, label: 'Tanggal' },
-  { id: 'clockin', numeric: false, disablePadding: false, label: 'Clock-In' },
-  { id: 'clockout', numeric: false, disablePadding: false, label: 'Clock-Out' },
-  { id: 'jamKerja', numeric: true, disablePadding: false, label: 'Jam Kerja' },
-  { id: 'gajiPokok', numeric: true, disablePadding: false, label: 'Gaji Pokok' },
-  { id: 'uangMakan', numeric: false, disablePadding: false, label: 'Uang Makan' },
-  { id: 'uangLembur', numeric: false, disablePadding: false, label: 'Uang Lembur' },
-  { id: 'gajiLibur', numeric: false, disablePadding: false, label: 'Gaji Libur' },
-  { id: 'terlambat', numeric: false, disablePadding: false, label: 'Terlambat' },
-  { id: 'keterangan', numeric: false, disablePadding: false, label: 'Keterangan' },
-  { id: 'totalGaji', numeric: false, disablePadding: false, label: 'Total Gaji' },
+  {id: 'tanggal', numeric: false, disablePadding: false, label: 'Tanggal'},
+  {id: 'clockin', numeric: false, disablePadding: false, label: 'Clock-In'},
+  {id: 'clockout', numeric: false, disablePadding: false, label: 'Clock-Out'},
+  {id: 'jamKerja', numeric: true, disablePadding: false, label: 'Jam Kerja'},
+  {id: 'gajiPokok', numeric: true, disablePadding: false, label: 'Gaji Pokok'},
+  {id: 'uangMakan', numeric: false, disablePadding: false, label: 'Uang Makan'},
+  {id: 'uangLembur', numeric: false, disablePadding: false, label: 'Uang Lembur'},
+  {id: 'gajiLibur', numeric: false, disablePadding: false, label: 'Gaji Libur'},
+  {id: 'terlambat', numeric: false, disablePadding: false, label: 'Terlambat'},
+  {id: 'keterangan', numeric: false, disablePadding: false, label: 'Keterangan'},
+  {id: 'totalGaji', numeric: false, disablePadding: false, label: 'Total Gaji'},
 ];
 
 function EnhancedTableHead(props) {
-  const { order, orderBy, onRequestSort } =
+  const {order, orderBy, onRequestSort} =
     props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -107,13 +118,13 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected } = props;
+  const {numSelected} = props;
 
   return (
     <Toolbar
       sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
+        pl: {sm: 2},
+        pr: {xs: 1, sm: 1},
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
@@ -122,7 +133,7 @@ function EnhancedTableToolbar(props) {
     >
       {numSelected > 0 ? (
         <Typography
-          sx={{ flex: '1 1 100%' }}
+          sx={{flex: '1 1 100%'}}
           color="inherit"
           variant="subtitle1"
           component="div"
@@ -131,7 +142,7 @@ function EnhancedTableToolbar(props) {
         </Typography>
       ) : (
         <Typography
-          sx={{ flex: '1 1 100%' }}
+          sx={{flex: '1 1 100%'}}
           variant="h6"
           id="tableTitle"
           component="div"
@@ -143,13 +154,13 @@ function EnhancedTableToolbar(props) {
       {numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton>
-            <DeleteIcon />
+            <DeleteIcon/>
           </IconButton>
         </Tooltip>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <FilterListIcon />
+            <FilterListIcon/>
           </IconButton>
         </Tooltip>
       )}
@@ -175,7 +186,7 @@ const timeToSeconds = (time) => {
 };
 
 export default function GajiKaryawan() {
-  const { auth, logout } = useAuth();
+  const {auth, logout} = useAuth();
   const getUsername = auth.user ? auth.user.username : '';
   const totalMonthlySalary = useRef(0);
   const daysWithoutLateness = useRef(0);
@@ -212,7 +223,7 @@ export default function GajiKaryawan() {
 
   const startDate = startOfMonth(currentDate);
   const endDate = endOfMonth(currentDate);
-  const dates = eachDayOfInterval({ start: startDate, end: endDate });
+  const dates = eachDayOfInterval({start: startDate, end: endDate});
   const currentMonthName = months[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
@@ -244,7 +255,7 @@ export default function GajiKaryawan() {
     console.log(tanggal);
     // if (!tanggal) return '';
     // const namaHari = format(tanggal, 'EEEE', { locale: 'id-ID' });
-  
+
   };
 
   const formatNumberWithSeparator = (number) => {
@@ -268,7 +279,7 @@ export default function GajiKaryawan() {
 
     fetchData();
   }, []);
-  
+
   const optKaryawan = rows.map(item => ({
     label: item.username,
     value: item.id,
@@ -309,7 +320,7 @@ export default function GajiKaryawan() {
       console.error('Error fetching data:', error);
     }
   };
-  
+
   const calculateSalarySlip = (employee) => {
     if (!employee) {
       return {
@@ -352,8 +363,7 @@ export default function GajiKaryawan() {
     let holidayPay = 64000;
     if (employee.keterangan === 'LIBUR') {
       totalSalary = holidayPay + basicSalary + mealAllowance + overtimePay + latenessPenalty;
-    }
-    else{
+    } else {
       totalSalary = basicSalary + mealAllowance + overtimePay + latenessPenalty;
     }
     if (totalSalary !== 0) {
@@ -377,36 +387,41 @@ export default function GajiKaryawan() {
 
   const bonusTidakTelat = (daysWithoutLateness === dates.length) ? 100000 : 0;
   const totalMonthlySalaryWithBonus = totalMonthlySalary.current + bonusTidakTelat;
-  
+
   const handleLogout = () => {
     setOpenLogout(false);
     logout();
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
+    <Box sx={{display: 'flex'}}>
+      <CssBaseline/>
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{width: {sm: drawerWidth}, flexShrink: {sm: 0}}}
         aria-label="mailbox folders"
       >
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, backgroundColor: 'black', color: 'white' },
+            display: {xs: 'none', sm: 'block'},
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: 'black',
+              color: 'white'
+            },
           }}
           open
         >
-          <SupervisorSidebar />
+          <SupervisorSidebar/>
         </Drawer>
       </Box>
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{flexGrow: 1, p: 3, width: {sm: `calc(100% - ${drawerWidth}px)`}}}
       >
-        <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
+        <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle/>}>
           {getUsername}
         </Button>
         <Modal
@@ -415,24 +430,25 @@ export default function GajiKaryawan() {
           open={openLogout}
           onClose={handleCloseLogout}
           closeAfterTransition
-          slots={{ backdrop: Backdrop }}
+          slots={{backdrop: Backdrop}}
           slotProps={{
             backdrop: {
               TransitionComponent: Fade,
             },
           }}
-          >
+        >
           <Fade in={openLogout}>
             <Box sx={styleModal}>
-              <AccountCircle style={{ fontSize: 100 }} />
+              <AccountCircle style={{fontSize: 100}}/>
               <Typography id="spring-modal-title" variant="h6" component="h2">
                 Apakah anda yakin ingin keluar?
               </Typography>
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{mt: 2}}>
                 <Button variant="outlined" onClick={handleLogout}>
                   Ya
                 </Button>
-                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: '#FE8A01', color: 'white' }}>
+                <Button variant="outlined" onClick={handleCloseLogout}
+                        sx={{ml: 2, backgroundColor: '#FE8A01', color: 'white'}}>
                   Tidak
                 </Button>
               </Box>
@@ -440,9 +456,9 @@ export default function GajiKaryawan() {
           </Fade>
         </Modal>
         <br></br>
-        <Toolbar />
+        <Toolbar/>
         <RootContainer>
-          <Box sx={{ minWidth: 300 }}>
+          <Box sx={{minWidth: 300}}>
             <FormControl fullWidth>
               <Typography>Pilih Karyawan *</Typography>
               <Autocomplete
@@ -459,7 +475,7 @@ export default function GajiKaryawan() {
           <Grid container alignItems="center" justifyContent="center">
             <Grid item>
               <IconButton onClick={handlePreviousMonth}>
-                <ChevronLeft />
+                <ChevronLeft/>
               </IconButton>
             </Grid>
             <Grid item>
@@ -467,26 +483,26 @@ export default function GajiKaryawan() {
             </Grid>
             <Grid item>
               <IconButton onClick={handleNextMonth}>
-                <ChevronRight />
+                <ChevronRight/>
               </IconButton>
             </Grid>
           </Grid>
-          <Box sx={{ width: '100%' }}>
+          <Box sx={{width: '100%'}}>
             {jamMasuk !== '' && jadwalLibur !== '' && (
               <Typography>Jam masuk: {jamMasuk} &nbsp;&nbsp;&nbsp; Jadwal Libur: Setiap {jadwalLibur}</Typography>
             )}
-            <Paper sx={{ width: '100%', mb: 2 }}>
+            <Paper sx={{width: '100%', mb: 2}}>
               <TableContainer sx={{maxHeight: 400}}>
-                  <Table
-                  sx={{ minWidth: 750 }}
+                <Table
+                  sx={{minWidth: 750}}
                   aria-labelledby="tableTitle"
                   stickyHeader
-                  >
+                >
                   <EnhancedTableHead
-                      order={order}
-                      orderBy={orderBy}
-                      onRequestSort={handleRequestSort}
-                      rowCount={rows.length}
+                    order={order}
+                    orderBy={orderBy}
+                    onRequestSort={handleRequestSort}
+                    rowCount={rows.length}
                   />
                   <TableBody>
                     {dates.map((date, idx) => {
@@ -497,7 +513,7 @@ export default function GajiKaryawan() {
                       console.log(holiday);
                       const salarySlip = calculateSalarySlip(employee);
                       return (
-                        <TableRow hover tabIndex={-1} key={date} sx={{ cursor: 'pointer' }}>
+                        <TableRow hover tabIndex={-1} key={date} sx={{cursor: 'pointer'}}>
                           <TableCell align="center">{formattedDate}</TableCell>
                           <TableCell align="center">{employee?.clockIn || 0}</TableCell>
                           <TableCell align="center">{employee?.clockOut || 0}</TableCell>
@@ -513,21 +529,21 @@ export default function GajiKaryawan() {
                       );
                     })}
                     {emptyRows > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={10} />
-                    </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={10}/>
+                      </TableRow>
                     )}
                   </TableBody>
-                  </Table>
+                </Table>
               </TableContainer>
               <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={rows.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={rows.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
               />
               <Table>
                 <TableRow>
@@ -544,7 +560,7 @@ export default function GajiKaryawan() {
                 </TableRow>
               </Table>
             </Paper>
-              {/* <FormControlLabel
+            {/* <FormControlLabel
               control={<Switch checked={dense} onChange={handleChangeDense} />}
               label="Dense padding"
               /> */}
