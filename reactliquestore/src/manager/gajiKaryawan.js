@@ -393,6 +393,20 @@ export default function GajiKaryawan() {
     logout();
   };
 
+  const [employeeOptions, setEmployeeOptions] = useState([]);
+
+  // Fetch employee list
+  useEffect(() => {
+    const fetchData = async () => await axios.get(process.env.ENDPOINTS_EMPLOYEES_SERVICE);
+
+    fetchData()
+      .then(res => {
+        console.log(res.data);
+        const employeeOptions = res.data.employeeList.map(e => ({"id": e.id, "label": e.fullName}));
+        setEmployeeOptions(employeeOptions);
+      });
+  }, []);
+
   return (
     <Box sx={{display: 'flex'}}>
       <CssBaseline/>
@@ -417,6 +431,8 @@ export default function GajiKaryawan() {
           <SupervisorSidebar/>
         </Drawer>
       </Box>
+
+      {/* Main component */}
       <Box
         component="main"
         sx={{flexGrow: 1, p: 3, width: {sm: `calc(100% - ${drawerWidth}px)`}}}
@@ -457,13 +473,16 @@ export default function GajiKaryawan() {
         </Modal>
         <br></br>
         <Toolbar/>
+
+        {/* Root container */}
         <RootContainer>
+          {/* Employee selector */}
           <Box sx={{minWidth: 300}}>
             <FormControl fullWidth>
               <Typography>Pilih Karyawan *</Typography>
               <Autocomplete
                 fullWidth
-                options={optKaryawan}
+                options={!employeeOptions ? [{label: "Loading...", id: 0}] : employeeOptions}
                 getOptionLabel={(option) => option.label}
                 getOptionSelected={(option, value) => option.id === value}
                 renderInput={(params) => <TextField {...params} />}
@@ -472,6 +491,8 @@ export default function GajiKaryawan() {
               />
             </FormControl>
           </Box>
+
+          {/* Month selector */}
           <Grid container alignItems="center" justifyContent="center">
             <Grid item>
               <IconButton onClick={handlePreviousMonth}>
@@ -487,6 +508,8 @@ export default function GajiKaryawan() {
               </IconButton>
             </Grid>
           </Grid>
+
+          {/* Pay detail table */}
           <Box sx={{width: '100%'}}>
             {jamMasuk !== '' && jadwalLibur !== '' && (
               <Typography>Jam masuk: {jamMasuk} &nbsp;&nbsp;&nbsp; Jadwal Libur: Setiap {jadwalLibur}</Typography>
