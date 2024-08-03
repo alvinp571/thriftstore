@@ -170,6 +170,16 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
+const idrFormat = new Intl.NumberFormat('en-ID', {
+  style: 'currency',
+  currency: 'IDR'
+});
+
+const formatCurrency = (number) => {
+  if (!number) number = 0;
+  return idrFormat.format(number);
+};
+
 export default function GajiKaryawan() {
   const {auth, logout} = useAuth();
   const getUsername = auth.user ? auth.user.username : '';
@@ -179,37 +189,36 @@ export default function GajiKaryawan() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [openLogout, setOpenLogout] = useState(false);
+
+  const [employeeOptions, setEmployeeOptions] = useState([]);
+  const [currentEmployee, setCurrentEmployee] = useState({});
   const [scheduledClockIn, setScheduledClockIn] = useState('');
   const [offDay, setOffDay] = useState('');
-  const [openLogout, setOpenLogout] = useState(false);
-  const handleOpenLogout = () => setOpenLogout(true);
-  const handleCloseLogout = () => setOpenLogout(false);
+  const [payDetail, setPayDetail] = useState({});
+
   const months = [
     'Januari', 'Februari', 'Maret', 'April',
     'Mei', 'Juni', 'Juli', 'Agustus',
     'September', 'Oktober', 'November', 'Desember'
   ];
-
-  const handlePreviousMonth = () => {
-    setCurrentDate(subMonths(currentDate, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate(addMonths(currentDate, 1));
-  };
-
   const currentMonthName = months[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
-  const idrFormat = new Intl.NumberFormat('en-ID', {
-    style: 'currency',
-    currency: 'IDR'
-  });
-  const formatCurrency = (number) => {
-    if (!number) number = 0;
-    return idrFormat.format(number);
+
+  const drawerWidth = 300;
+
+  // Log out handlers
+  const handleLogout = () => {
+    setOpenLogout(false);
+    logout();
   };
 
+  const handleOpenLogout = () => setOpenLogout(true);
+
+  const handleCloseLogout = () => setOpenLogout(false);
+
+  // Table handlers
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -225,32 +234,50 @@ export default function GajiKaryawan() {
     setPage(0);
   };
 
-  const drawerWidth = 300;
+  // Selected employee handlers
+  const handleEmployeeChange = (event, newValue) => {
+    setCurrentEmployee(newValue);
+  };
 
-  const [payDetail, setPayDetail] = useState({});
+  // Selected date handlers
+  const handlePreviousMonth = () => {
+    setCurrentDate(subMonths(currentDate, 1));
+  };
 
-  const handleEmployeeChange = async (event, newValue) => {
-    try {
-      if (!newValue) return;
+  const handleNextMonth = () => {
+    setCurrentDate(addMonths(currentDate, 1));
+  };
 
+  // Update page data when selected employee or data change
+  useEffect(() => {
+    if (!currentEmployee || !currentEmployee.id) return;
+
+    const fetchData = async () => {
       const month = currentDate.getMonth();
       const year = currentDate.getFullYear();
 
-      const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${newValue.id}/pay-detail?month=${month}&year=${year}`;
-
+      const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}/pay-detail?month=${month}&year=${year}`;
       const data = await axios.get(url).then(res => res.data);
+
       setPayDetail(data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
     }
-  };
 
-  const handleLogout = () => {
-    setOpenLogout(false);
-    logout();
-  };
+    fetchData();
+  }, [currentEmployee, currentDate]);
 
-  const [employeeOptions, setEmployeeOptions] = useState([]);
+  useEffect(() => {
+    if (!currentEmployee || !currentEmployee.id) return;
+
+    const fetchData = async () => {
+      const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}`;
+      const data = await axios.get(url).then(res => res.data);
+      
+      setScheduledClockIn(data.scheduledClockIn);
+      setOffDay(data.offDay);
+    }
+    
+    fetchData();
+  }, [currentEmployee]);
 
   // Fetch employee list
   useEffect(() => {
