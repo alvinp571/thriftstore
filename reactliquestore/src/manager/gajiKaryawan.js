@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import {alpha} from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -34,7 +34,7 @@ import {
 } from '@mui/material';
 import SupervisorSidebar from './sidebar';
 import {AccountCircle, ChevronLeft, ChevronRight} from '@mui/icons-material';
-import {addMonths, eachDayOfInterval, endOfMonth, format, startOfMonth, subMonths} from 'date-fns';
+import {addMonths, subMonths} from 'date-fns';
 import {useAuth} from '../authContext';
 
 const RootContainer = styled.div`
@@ -85,7 +85,6 @@ function EnhancedTableHead(props) {
           <TableCell
             key={headCell.id}
             align={'center'}
-            // align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -113,8 +112,7 @@ EnhancedTableHead.propTypes = {
   onRequestSort: PropTypes.func.isRequired,
   onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
+  orderBy: PropTypes.string.isRequired
 };
 
 function EnhancedTableToolbar(props) {
@@ -171,34 +169,18 @@ function EnhancedTableToolbar(props) {
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
-const timeToSeconds = (time) => {
-  if (!time) return NaN;
-  const parts = time.split(':').map(Number);
-  if (parts.length === 2) {
-    const [hours, minutes] = parts;
-    return hours * 3600 + minutes * 60;
-  } else if (parts.length === 3) {
-    const [hours, minutes, seconds] = parts;
-    return hours * 3600 + minutes * 60 + seconds;
-  } else {
-    return NaN; // Invalid time format
-  }
-};
 
 export default function GajiKaryawan() {
   const {auth, logout} = useAuth();
   const getUsername = auth.user ? auth.user.username : '';
-  const totalMonthlySalary = useRef(0);
-  const daysWithoutLateness = useRef(0);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [jamMasuk, setJamMasuk] = useState('');
-  const [jadwalLibur, setJadwalLibur] = useState('');
-  const [selectedEmployee, getSelectedEmployee] = useState('');
+  const [scheduledClockIn, setScheduledClockIn] = useState('');
+  const [offDay, setOffDay] = useState('');
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
@@ -209,20 +191,13 @@ export default function GajiKaryawan() {
   ];
 
   const handlePreviousMonth = () => {
-    totalMonthlySalary.current = 0;
-    daysWithoutLateness.current = 0;
     setCurrentDate(subMonths(currentDate, 1));
   };
 
   const handleNextMonth = () => {
-    totalMonthlySalary.current = 0;
-    daysWithoutLateness.current = 0;
     setCurrentDate(addMonths(currentDate, 1));
   };
 
-  const startDate = startOfMonth(currentDate);
-  const endDate = endOfMonth(currentDate);
-  const dates = eachDayOfInterval({start: startDate, end: endDate});
   const currentMonthName = months[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
@@ -234,25 +209,6 @@ export default function GajiKaryawan() {
     if (!number) number = 0;
     return idrFormat.format(number);
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // const response = await axios.get(`http://localhost:8080/manager/daftarSelectKaryawan`);
-        // setRows(response.data);
-        // console.log(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const optKaryawan = rows.map(item => ({
-    label: item.username,
-    value: item.id,
-  }));
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -384,10 +340,7 @@ export default function GajiKaryawan() {
               <Autocomplete
                 fullWidth
                 options={!employeeOptions ? [{label: "Loading...", id: 0}] : employeeOptions}
-                getOptionLabel={(option) => option.label}
-                getOptionSelected={(option, value) => option.id === value}
-                renderInput={(params) => <TextField {...params} />}
-                value={optKaryawan.find((option) => option.id === selectedEmployee)}
+                renderInput={(params) => <TextField {...params} label="Employee"/>}
                 onChange={handleEmployeeChange}
               />
             </FormControl>
@@ -412,8 +365,8 @@ export default function GajiKaryawan() {
 
           {/* Pay detail table */}
           <Box sx={{width: '100%'}}>
-            {jamMasuk !== '' && jadwalLibur !== '' && (
-              <Typography>Jam masuk: {jamMasuk} &nbsp;&nbsp;&nbsp; Jadwal Libur: Setiap {jadwalLibur}</Typography>
+            {scheduledClockIn !== '' && offDay !== '' && (
+              <Typography>Jam masuk: {scheduledClockIn} &nbsp;&nbsp;&nbsp; Jadwal Libur: Setiap {offDay}</Typography>
             )}
             <Paper sx={{width: '100%', mb: 2}}>
               <TableContainer sx={{maxHeight: 400}}>
@@ -426,7 +379,6 @@ export default function GajiKaryawan() {
                     order={order}
                     orderBy={orderBy}
                     onRequestSort={handleRequestSort}
-                    rowCount={rows.length}
                   />
                   <TableBody>
                     {payDetail && payDetail.dailyPayDetail?.map(pd => {
@@ -461,27 +413,32 @@ export default function GajiKaryawan() {
 
               {/* Monthly Pay Summary */}
               <Table>
-                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                <TableRow
+                  sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Gaji Kotor</TableCell>
                   <TableCell align="center"></TableCell>
                   <TableCell align="center">{formatCurrency(payDetail.monthlyPayGross)}</TableCell>
                 </TableRow>
-                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                <TableRow
+                  sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Absen</TableCell>
                   <TableCell align="center">{payDetail.absentCount}</TableCell>
                   <TableCell align="center">{formatCurrency(payDetail.absentDeduction)}</TableCell>
                 </TableRow>
-                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                <TableRow
+                  sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Terlambat</TableCell>
                   <TableCell align="center">{payDetail.lateCount}</TableCell>
                   <TableCell align="center">{formatCurrency(payDetail.lateDeduction)}</TableCell>
                 </TableRow>
-                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                <TableRow
+                  sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Potongan</TableCell>
                   <TableCell align="center"></TableCell>
                   <TableCell align="center">{formatCurrency(payDetail.netDeduction)}</TableCell>
                 </TableRow>
-                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                <TableRow
+                  sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Total Gaji</TableCell>
                   <TableCell align="center"></TableCell>
                   <TableCell align="center">{formatCurrency(payDetail.monthlyPayNet)}</TableCell>
