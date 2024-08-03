@@ -195,7 +195,6 @@ export default function GajiKaryawan() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
-  const [choosenEmployee, setChoosenEmployee] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [jamMasuk, setJamMasuk] = useState('');
   const [jadwalLibur, setJadwalLibur] = useState('');
@@ -227,50 +226,20 @@ export default function GajiKaryawan() {
   const currentMonthName = months[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
-  const Holiday = (date) => {
-    console.log(date);
-    const dates = new Date(date);
-    const dayOfWeek = format(dates, 'EEEE');
-    switch (dayOfWeek) {
-      case 'Sunday':
-        return 'minggu';
-      case 'Monday':
-        return 'senin';
-      case 'Tuesday':
-        return 'selasa';
-      case 'Wednesday':
-        return 'rabu';
-      case 'Thursday':
-        return 'kamis';
-      case 'Friday':
-        return 'jumat';
-      case 'Saturday':
-        return 'sabtu';
-      default:
-        return '';
-    }
-  };
-
-  const getNamaHari = (tanggal) => {
-    console.log(tanggal);
-    // if (!tanggal) return '';
-    // const namaHari = format(tanggal, 'EEEE', { locale: 'id-ID' });
-
-  };
-
-  const formatNumberWithSeparator = (number) => {
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
-
+  const idrFormat = new Intl.NumberFormat('en-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  });
   const formatCurrency = (number) => {
-    return `Rp. ${number.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")},00`;
+    if (!number) number = 0;
+    return idrFormat.format(number);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/manager/daftarSelectKaryawan`);
-        setRows(response.data);
+        // const response = await axios.get(`http://localhost:8080/manager/daftarSelectKaryawan`);
+        // setRows(response.data);
         // console.log(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -300,93 +269,25 @@ export default function GajiKaryawan() {
     setPage(0);
   };
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - choosenEmployee.length) : 0;
-
   const drawerWidth = 300;
-  const handlePilihKaryawanChange = async (event, newValue) => {
-    getSelectedEmployee(newValue.value);
-    totalMonthlySalary.current = 0;
-    daysWithoutLateness.current = 0;
+
+  const [payDetail, setPayDetail] = useState({});
+
+  const handleEmployeeChange = async (event, newValue) => {
     try {
-      const response = await axios.get(`http://localhost:8080/manager/pilihKaryawan?idAbsensi=${newValue.value}`);
-      console.log(response.data);
-      setChoosenEmployee(response.data);
-      setJamMasuk(response.data[0].jam_masuk);
-      console.log("ini jam masuk: ", response.data[0].jam_masuk)
-      setJadwalLibur(response.data[0].jadwal_libur);
+      if (!newValue) return;
+
+      const month = currentDate.getMonth();
+      const year = currentDate.getFullYear();
+
+      const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${newValue.id}/pay-detail?month=${month}&year=${year}`;
+
+      const data = await axios.get(url).then(res => res.data);
+      setPayDetail(data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
-
-  const calculateSalarySlip = (employee) => {
-    if (!employee) {
-      return {
-        total_jam_kerja: 0,
-        gaji_pokok: 0,
-        uang_makan: 0,
-        uang_lembur: 0,
-        gaji_libur: 0,
-        keterlambatan: 0,
-        keterangan: 'ABSEN',
-        total_gaji: 0,
-      };
-    }
-
-    console.log("ini employee clock in: ", employee.clockIn);
-
-    const clockInTime = timeToSeconds(employee.clockIn);
-    const clockOutTime = timeToSeconds(employee.clockOut);
-    console.log(clockInTime);
-    console.log(clockOutTime);
-    console.log(timeToSeconds(jamMasuk));
-    const totalWorkSeconds = clockOutTime - clockInTime;
-    const totalWorkHours = totalWorkSeconds / 3600;
-
-    const basicSalary = Math.floor(totalWorkHours > 8 ? 64000 : totalWorkHours * 8000);
-    const mealAllowance = totalWorkHours > 8 ? 10000 : 0;
-    const overtimePay = totalWorkHours > 8 ? Math.floor((totalWorkHours - 8) * 10000) : 0;
-
-    let latenessPenalty = 0;
-    if (clockInTime > timeToSeconds(jamMasuk)) {
-      const lateMinutes = (clockInTime - timeToSeconds(jamMasuk)) / 60;
-      console.log(lateMinutes);
-      if (lateMinutes >= 1 && lateMinutes <= 5) latenessPenalty = -10000;
-      else if (lateMinutes > 5 && lateMinutes <= 15) latenessPenalty = -15000;
-      else if (lateMinutes > 15 && lateMinutes <= 30) latenessPenalty = -20000;
-      else if (lateMinutes > 30 && lateMinutes <= 60) latenessPenalty = -30000;
-    }
-    const isLate = clockInTime > timeToSeconds(jamMasuk) ? 'TERLAMBAT' : 'TIDAK TELAT';
-    let totalSalary = 0;
-    let holidayPay = 64000;
-    if (employee.keterangan === 'LIBUR') {
-      totalSalary = holidayPay + basicSalary + mealAllowance + overtimePay + latenessPenalty;
-    } else {
-      totalSalary = basicSalary + mealAllowance + overtimePay + latenessPenalty;
-    }
-    if (totalSalary !== 0) {
-      totalMonthlySalary.current += totalSalary;
-      if (isLate === 'TIDAK TELAT') {
-        daysWithoutLateness.current++;
-      }
-    }
-
-    return {
-      total_jam_kerja: totalWorkHours.toFixed(2),
-      gaji_pokok: basicSalary,
-      uang_makan: mealAllowance,
-      uang_lembur: overtimePay,
-      gaji_libur: employee.keterangan === 'LIBUR' ? 64000 : 0,
-      keterlambatan: latenessPenalty,
-      keterangan: isLate,
-      total_gaji: totalSalary,
-    };
-  };
-
-  const bonusTidakTelat = (daysWithoutLateness === dates.length) ? 100000 : 0;
-  const totalMonthlySalaryWithBonus = totalMonthlySalary.current + bonusTidakTelat;
 
   const handleLogout = () => {
     setOpenLogout(false);
@@ -397,7 +298,7 @@ export default function GajiKaryawan() {
 
   // Fetch employee list
   useEffect(() => {
-    const fetchData = async () => await axios.get(process.env.ENDPOINTS_EMPLOYEES_SERVICE);
+    const fetchData = async () => await axios.get(process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE);
 
     fetchData()
       .then(res => {
@@ -487,7 +388,7 @@ export default function GajiKaryawan() {
                 getOptionSelected={(option, value) => option.id === value}
                 renderInput={(params) => <TextField {...params} />}
                 value={optKaryawan.find((option) => option.id === selectedEmployee)}
-                onChange={handlePilihKaryawanChange}
+                onChange={handleEmployeeChange}
               />
             </FormControl>
           </Box>
@@ -528,34 +429,23 @@ export default function GajiKaryawan() {
                     rowCount={rows.length}
                   />
                   <TableBody>
-                    {dates.map((date, idx) => {
-                      const formattedDate = format(date, 'dd-MM-yyyy');
-                      const formatDate = format(date, 'yyyy-MM-dd');
-                      const employee = choosenEmployee.find((emp) => emp.tanggal === formattedDate);
-                      const holiday = Holiday(formatDate);
-                      console.log(holiday);
-                      const salarySlip = calculateSalarySlip(employee);
+                    {payDetail && payDetail.dailyPayDetail?.map(pd => {
                       return (
-                        <TableRow hover tabIndex={-1} key={date} sx={{cursor: 'pointer'}}>
-                          <TableCell align="center">{formattedDate}</TableCell>
-                          <TableCell align="center">{employee?.clockIn || 0}</TableCell>
-                          <TableCell align="center">{employee?.clockOut || 0}</TableCell>
-                          <TableCell align="center">{salarySlip.total_jam_kerja}</TableCell>
-                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.gaji_pokok)}</TableCell>
-                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.uang_makan)}</TableCell>
-                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.uang_lembur)}</TableCell>
-                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.gaji_libur)}</TableCell>
-                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.keterlambatan)}</TableCell>
-                          <TableCell align="center">{salarySlip.keterangan}</TableCell>
-                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.total_gaji)}</TableCell>
+                        <TableRow hover tabIndex={-1} sx={{cursor: 'pointer'}}>
+                          <TableCell align="center">{pd?.date}</TableCell>
+                          <TableCell align="center">{pd?.clockIn || 0}</TableCell>
+                          <TableCell align="center">{pd?.clockOut || 0}</TableCell>
+                          <TableCell align="center">{pd?.hoursWorked || 0}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.basePay)}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.foodAllowance)}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.overtimePay)}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.offPay)}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.absentCount)}</TableCell>
+                          <TableCell align="center">{pd?.attendanceStatus}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.netPay)}</TableCell>
                         </TableRow>
                       );
                     })}
-                    {emptyRows > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={10}/>
-                      </TableRow>
-                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -568,25 +458,36 @@ export default function GajiKaryawan() {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />
+
+              {/* Monthly Pay Summary */}
               <Table>
-                <TableRow>
-                  <TableCell colSpan={10} align="right">Total Gaji Bulanan</TableCell>
-                  <TableCell align="center">{formatCurrency(totalMonthlySalary.current)}</TableCell>
+                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                  <TableCell align="right">Gaji Kotor</TableCell>
+                  <TableCell align="center"></TableCell>
+                  <TableCell align="center">{formatCurrency(payDetail.monthlyPayGross)}</TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell colSpan={10} align="right">Bonus Tidak Telat</TableCell>
-                  <TableCell align="center">{bonusTidakTelat}</TableCell>
+                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                  <TableCell align="right">Absen</TableCell>
+                  <TableCell align="center">{payDetail.absentCount}</TableCell>
+                  <TableCell align="center">{formatCurrency(payDetail.absentDeduction)}</TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell colSpan={10} align="right">Total Gaji + Bonus</TableCell>
-                  <TableCell align="center">{formatCurrency(totalMonthlySalaryWithBonus)}</TableCell>
+                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                  <TableCell align="right">Terlambat</TableCell>
+                  <TableCell align="center">{payDetail.lateCount}</TableCell>
+                  <TableCell align="center">{formatCurrency(payDetail.lateDeduction)}</TableCell>
+                </TableRow>
+                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                  <TableCell align="right">Potongan</TableCell>
+                  <TableCell align="center"></TableCell>
+                  <TableCell align="center">{formatCurrency(payDetail.netDeduction)}</TableCell>
+                </TableRow>
+                <TableRow sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
+                  <TableCell align="right">Total Gaji</TableCell>
+                  <TableCell align="center"></TableCell>
+                  <TableCell align="center">{formatCurrency(payDetail.monthlyPayNet)}</TableCell>
                 </TableRow>
               </Table>
             </Paper>
-            {/* <FormControlLabel
-              control={<Switch checked={dense} onChange={handleChangeDense} />}
-              label="Dense padding"
-              /> */}
           </Box>
         </RootContainer>
       </Box>
