@@ -8,10 +8,14 @@ import com.liquestore.model.AbsensiModel;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 public class GetPayDetailSchemaMapper {
+    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm");
+
     public GetPayDetailSchema map(List<GetPayDetailSchema.DailyPayDetail> dailyPayDetailList,
             MonthlyPayCalculation monthlyPayCalculation) {
         return GetPayDetailSchema.builder()
@@ -25,10 +29,15 @@ public class GetPayDetailSchemaMapper {
 
     public GetPayDetailSchema.DailyPayDetail mapDailyPayDetail(AbsensiModel attendance,
             DailyPayCalculation dailyPayCalculation, AttendanceStatus attendanceStatus) {
+        String date = DATE_FORMAT.format(
+                LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault()));
+        String clockIn = TIME_FORMAT.format(attendance.getClockin().toLocalDateTime().toLocalTime());
+        String clockOut = TIME_FORMAT.format(attendance.getClockout().toLocalDateTime().toLocalTime());
+
         return GetPayDetailSchema.DailyPayDetail.builder()
-                .date(LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault()))
-                .clockIn(attendance.getClockin().toLocalDateTime().toLocalTime())
-                .clockOut(attendance.getClockout().toLocalDateTime().toLocalTime())
+                .date(date)
+                .clockIn(clockIn)
+                .clockOut(clockOut)
                 .hoursWorked(dailyPayCalculation.getHoursWorked())
                 .basePay(dailyPayCalculation.getGrossPay())
                 .foodAllowance(dailyPayCalculation.getFoodAllowance())
@@ -42,7 +51,7 @@ public class GetPayDetailSchemaMapper {
 
     public GetPayDetailSchema.DailyPayDetail mapDailyPayDetail(LocalDate date, AttendanceStatus attendanceStatus) {
         return GetPayDetailSchema.DailyPayDetail.builder()
-                .date(date)
+                .date(DATE_FORMAT.format(date))
                 .attendanceStatus(attendanceStatus.name())
                 .build();
     }

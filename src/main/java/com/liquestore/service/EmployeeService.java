@@ -149,12 +149,18 @@ public class EmployeeService {
                 .multiply(absentModifier)
                 .toBigInteger();
 
+        int lateCount = (int) dailyPayDetailList.stream()
+                .filter(pd -> AttendanceStatus.LATE
+                        .equals(AttendanceStatus.valueOf(pd.getAttendanceStatus())))
+                .count();
+
         BigInteger netPay = grossPay.subtract(absentDeduction);
 
         return MonthlyPayCalculation.builder()
                 .grossPay(grossPay)
                 .absentCount(absentCount)
                 .absentDeduction(absentDeduction)
+                .lateCount(lateCount)
                 .netPay(netPay)
                 .build();
     }

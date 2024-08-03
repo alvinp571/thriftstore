@@ -10,6 +10,8 @@ public class MonthlyPayCalculation {
     private BigInteger grossPay;
     private int absentCount;
     private BigInteger absentDeduction;
-    private BigInteger deduction;
+    private int lateCount;
+    private BigInteger lateDeduction;
+    private BigInteger netDeduction;
     private BigInteger netPay;
 }
