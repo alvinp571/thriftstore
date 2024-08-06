@@ -2,7 +2,7 @@ package com.liquestore.mapper;
 
 import com.liquestore.constants.AttendanceStatus;
 import com.liquestore.dto.employee.DailyPayCalculation;
-import com.liquestore.dto.employee.GetPayDetailSchema;
+import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
 import com.liquestore.model.AbsensiModel;
 import org.springframework.stereotype.Service;
@@ -16,10 +16,10 @@ public class GetPayDetailSchemaMapper {
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm");
 
-    public GetPayDetailSchema map(List<GetPayDetailSchema.DailyPayDetail> dailyPayDetailList,
+    public GetMonthlyPayslipSchema map(List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList,
             MonthlyPayCalculation monthlyPayCalculation) {
-        return GetPayDetailSchema.builder()
-                .dailyPayDetail(dailyPayDetailList)
+        return GetMonthlyPayslipSchema.builder()
+                .dailyPayslipList(dailyPayslipList)
                 .monthlyPayGross(monthlyPayCalculation.getGrossPay())
                 .absentCount(monthlyPayCalculation.getAbsentCount())
                 .absentDeduction(monthlyPayCalculation.getAbsentDeduction())
@@ -27,14 +27,14 @@ public class GetPayDetailSchemaMapper {
                 .build();
     }
 
-    public GetPayDetailSchema.DailyPayDetail mapDailyPayDetail(AbsensiModel attendance,
+    public GetMonthlyPayslipSchema.DailyPayslip mapDailyPayDetail(AbsensiModel attendance,
             DailyPayCalculation dailyPayCalculation, AttendanceStatus attendanceStatus) {
         String date = DATE_FORMAT.format(
                 LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault()));
         String clockIn = TIME_FORMAT.format(attendance.getClockin().toLocalDateTime().toLocalTime());
         String clockOut = TIME_FORMAT.format(attendance.getClockout().toLocalDateTime().toLocalTime());
 
-        return GetPayDetailSchema.DailyPayDetail.builder()
+        return GetMonthlyPayslipSchema.DailyPayslip.builder()
                 .date(date)
                 .clockIn(clockIn)
                 .clockOut(clockOut)
@@ -49,8 +49,8 @@ public class GetPayDetailSchemaMapper {
                 .build();
     }
 
-    public GetPayDetailSchema.DailyPayDetail mapDailyPayDetail(LocalDate date, AttendanceStatus attendanceStatus) {
-        return GetPayDetailSchema.DailyPayDetail.builder()
+    public GetMonthlyPayslipSchema.DailyPayslip mapDailyPayDetail(LocalDate date, AttendanceStatus attendanceStatus) {
+        return GetMonthlyPayslipSchema.DailyPayslip.builder()
                 .date(DATE_FORMAT.format(date))
                 .attendanceStatus(attendanceStatus.name())
                 .build();

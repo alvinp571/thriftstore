@@ -4,7 +4,7 @@ import com.liquestore.constants.AttendanceStatus;
 import com.liquestore.dto.employee.DailyPayCalculation;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
-import com.liquestore.dto.employee.GetPayDetailSchema;
+import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
 import com.liquestore.mapper.GetEmployeeListSchemaMapper;
 import com.liquestore.mapper.GetEmployeeSchemaMapper;
@@ -53,7 +53,7 @@ public class EmployeeService {
         return getEmployeeSchemaMapper.map(employee);
     }
 
-    public GetPayDetailSchema getPayDetail(int employeeId, int month, int year) {
+    public GetMonthlyPayslipSchema getPayslip(int employeeId, int month, int year) {
         EmployeeModel employee = employeeRepository.findById(employeeId)
                 .orElseThrow(RuntimeException::new);
 
@@ -62,15 +62,15 @@ public class EmployeeService {
         var attendanceList =
                 absensiRepository.findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(employeeId, startDate, endDate);
 
-        var dailyPayDetailList = buildDailyPayDetailList(employee, month, year, attendanceList);
-        var monthlyPayCalculation = calculateMonthlyPay(dailyPayDetailList);
+        var dailyPayslip = buildDailyPayslipList(employee, month, year, attendanceList);
+        var monthlyPayCalculation = calculateMonthlyPay(dailyPayslip);
 
-        return getPayDetailResponseMapper.map(dailyPayDetailList, monthlyPayCalculation);
+        return getPayDetailResponseMapper.map(dailyPayslip, monthlyPayCalculation);
     }
 
-    private List<GetPayDetailSchema.DailyPayDetail> buildDailyPayDetailList(EmployeeModel employee, int month, int year,
+    private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee, int month, int year,
             List<AbsensiModel> attendanceList) {
-        List<GetPayDetailSchema.DailyPayDetail> dailyPayDetailList = new ArrayList<>();
+        List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList = new ArrayList<>();
 
         YearMonth yearMonth = YearMonth.of(year, month);
         int lengthOfMonth = yearMonth.lengthOfMonth();
@@ -89,12 +89,12 @@ public class EmployeeService {
                 DailyPayCalculation dailyPayCalculation = calculateDailyPay(employee, attendance);
                 var dailyPayDetail = getPayDetailResponseMapper.mapDailyPayDetail(attendance, dailyPayCalculation,
                         AttendanceStatus.PRESENT);
-                dailyPayDetailList.add(dailyPayDetail);
+                dailyPayslipList.add(dailyPayDetail);
 
                 index++;
             }
             else {
-                dailyPayDetailList.add(getPayDetailResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
+                dailyPayslipList.add(getPayDetailResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
             }
 
             day++;
@@ -102,12 +102,12 @@ public class EmployeeService {
 
         while (day <= lengthOfMonth) {
             LocalDate date = LocalDate.of(year, month, day);
-            dailyPayDetailList.add(getPayDetailResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
+            dailyPayslipList.add(getPayDetailResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
 
             day++;
         }
 
-        return dailyPayDetailList;
+        return dailyPayslipList;
     }
 
     private DailyPayCalculation calculateDailyPay(EmployeeModel employee, AbsensiModel attendance) {
@@ -150,12 +150,12 @@ public class EmployeeService {
                 .build();
     }
 
-    private MonthlyPayCalculation calculateMonthlyPay(List<GetPayDetailSchema.DailyPayDetail> dailyPayDetailList) {
-        BigInteger grossPay = dailyPayDetailList.stream()
-                .map(GetPayDetailSchema.DailyPayDetail::getNetPay)
+    private MonthlyPayCalculation calculateMonthlyPay(List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList) {
+        BigInteger grossPay = dailyPayslipList.stream()
+                .map(GetMonthlyPayslipSchema.DailyPayslip::getNetPay)
                 .reduce(BigInteger.ZERO, (a, b) -> a.add(Optional.ofNullable(b).orElse(BigInteger.ZERO)));
 
-        int absentCount = (int) dailyPayDetailList.stream()
+        int absentCount = (int) dailyPayslipList.stream()
                 .filter(pd -> AttendanceStatus.ABSENT
                         .equals(AttendanceStatus.valueOf(pd.getAttendanceStatus())))
                 .count();
@@ -165,7 +165,7 @@ public class EmployeeService {
                 .multiply(absentModifier)
                 .toBigInteger();
 
-        int lateCount = (int) dailyPayDetailList.stream()
+        int lateCount = (int) dailyPayslipList.stream()
                 .filter(pd -> AttendanceStatus.LATE
                         .equals(AttendanceStatus.valueOf(pd.getAttendanceStatus())))
                 .count();

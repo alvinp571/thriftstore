@@ -8,8 +8,8 @@ import java.util.List;
 
 @Data
 @Builder
-public class GetPayDetailSchema {
-    private List<DailyPayDetail> dailyPayDetail;
+public class GetMonthlyPayslipSchema {
+    private List<DailyPayslip> dailyPayslipList;
     private BigInteger monthlyPayGross;
     private int absentCount;
     private BigInteger absentDeduction;
@@ -21,7 +21,7 @@ public class GetPayDetailSchema {
 
     @Data
     @Builder
-    public static class DailyPayDetail {
+    public static class DailyPayslip {
         private String date;
         private String clockIn;
         private String clockOut;

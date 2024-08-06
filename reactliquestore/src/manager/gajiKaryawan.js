@@ -195,7 +195,7 @@ export default function GajiKaryawan() {
   const [currentEmployee, setCurrentEmployee] = useState({});
   const [scheduledClockIn, setScheduledClockIn] = useState('');
   const [offDay, setOffDay] = useState('');
-  const [payDetail, setPayDetail] = useState({});
+  const [payslip, setPayslip] = useState({});
 
   const months = [
     'Januari', 'Februari', 'Maret', 'April',
@@ -256,10 +256,10 @@ export default function GajiKaryawan() {
       const month = currentDate.getMonth() + 1;
       const year = currentDate.getFullYear();
 
-      const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}/pay-detail?month=${month}&year=${year}`;
+      const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}/monthly-payslip?month=${month}&year=${year}`;
       const data = await axios.get(url).then(res => res.data);
 
-      setPayDetail(data);
+      setPayslip(data);
     }
 
     fetchData();
@@ -408,7 +408,7 @@ export default function GajiKaryawan() {
                     onRequestSort={handleRequestSort}
                   />
                   <TableBody>
-                    {payDetail && payDetail.dailyPayDetail?.map(pd => {
+                    {payslip && payslip.dailyPayslipList?.map(pd => {
                       return (
                         <TableRow hover tabIndex={-1} sx={{cursor: 'pointer'}}>
                           <TableCell align="center">{pd?.date}</TableCell>
@@ -444,31 +444,31 @@ export default function GajiKaryawan() {
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Gaji Kotor</TableCell>
                   <TableCell align="center"></TableCell>
-                  <TableCell align="center">{formatCurrency(payDetail.monthlyPayGross)}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip.monthlyPayGross)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Absen</TableCell>
-                  <TableCell align="center">{payDetail.absentCount}</TableCell>
-                  <TableCell align="center">{formatCurrency(payDetail.absentDeduction)}</TableCell>
+                  <TableCell align="center">{payslip.absentCount}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip.absentDeduction)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Terlambat</TableCell>
-                  <TableCell align="center">{payDetail.lateCount}</TableCell>
-                  <TableCell align="center">{formatCurrency(payDetail.lateDeduction)}</TableCell>
+                  <TableCell align="center">{payslip.lateCount}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip.lateDeduction)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Potongan</TableCell>
                   <TableCell align="center"></TableCell>
-                  <TableCell align="center">{formatCurrency(payDetail.netDeduction)}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip.netDeduction)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Total Gaji</TableCell>
                   <TableCell align="center"></TableCell>
-                  <TableCell align="center">{formatCurrency(payDetail.monthlyPayNet)}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip.monthlyPayNet)}</TableCell>
                 </TableRow>
               </Table>
             </Paper>

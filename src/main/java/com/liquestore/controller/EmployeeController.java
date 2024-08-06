@@ -2,7 +2,7 @@ package com.liquestore.controller;
 
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
-import com.liquestore.dto.employee.GetPayDetailSchema;
+import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
 import com.liquestore.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +32,12 @@ public class EmployeeController {
         return ResponseEntity.ok(outputSchema);
     }
 
-    @GetMapping("/{id}/pay-detail")
-    public ResponseEntity<GetPayDetailSchema> getPayDetail(
+    @GetMapping("/{id}/monthly-payslip")
+    public ResponseEntity<GetMonthlyPayslipSchema> getMonthlyPayslip(
             @PathVariable("id") int employeeId,
             @RequestParam("month") int month,
             @RequestParam("year") int year) {
-        GetPayDetailSchema outputSchema = employeeService.getPayDetail(employeeId, month, year);
+        GetMonthlyPayslipSchema outputSchema = employeeService.getPayslip(employeeId, month, year);
 
         return ResponseEntity.ok(outputSchema);
     }
