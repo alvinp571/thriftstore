@@ -11,6 +11,7 @@ public class GetEmployeeSchema {
     private String fullName;
     private String scheduledClockIn;
     private String offDay;
+    private String phoneNumber;
     private PayDetail payDetail;
 
 
