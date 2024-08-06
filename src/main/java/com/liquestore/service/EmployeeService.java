@@ -11,7 +11,9 @@ import com.liquestore.mapper.GetEmployeeSchemaMapper;
 import com.liquestore.mapper.GetPayDetailSchemaMapper;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.EmployeeModel;
+import com.liquestore.model.EmployeePayDetail;
 import com.liquestore.repository.AbsensiRepository;
+import com.liquestore.repository.EmployeePayDetailRepository;
 import com.liquestore.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
+    private final EmployeePayDetailRepository employeePayDetailRepository;
     private final AbsensiRepository absensiRepository;
 
     private final GetEmployeeListSchemaMapper getEmployeeListSchemaMapper;
@@ -49,8 +52,10 @@ public class EmployeeService {
     public GetEmployeeSchema getEmployee(int id) {
         EmployeeModel employee = employeeRepository.findById(id)
                 .orElseThrow(RuntimeException::new);
+        EmployeePayDetail employeePayDetail = employeePayDetailRepository.findByEmployeeId(id)
+                .orElse(null);
 
-        return getEmployeeSchemaMapper.map(employee);
+        return getEmployeeSchemaMapper.map(employee, employeePayDetail);
     }
 
     public GetMonthlyPayslipSchema getPayslip(int employeeId, int month, int year) {
@@ -60,7 +65,8 @@ public class EmployeeService {
         Date startDate = Date.valueOf(LocalDate.of(year, month, 1));
         Date endDate = Date.valueOf(LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth()));
         var attendanceList =
-                absensiRepository.findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(employeeId, startDate, endDate);
+                absensiRepository.findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(employeeId, startDate,
+                        endDate);
 
         var dailyPayslip = buildDailyPayslipList(employee, month, year, attendanceList);
         var monthlyPayCalculation = calculateMonthlyPay(dailyPayslip);
@@ -68,7 +74,8 @@ public class EmployeeService {
         return getPayDetailResponseMapper.map(dailyPayslip, monthlyPayCalculation);
     }
 
-    private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee, int month, int year,
+    private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee, int month,
+            int year,
             List<AbsensiModel> attendanceList) {
         List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList = new ArrayList<>();
 
