@@ -21,6 +21,8 @@ public class GetEmployeeListSchemaMapper {
         return GetEmployeeListSchema.Employee.builder()
                 .id(employeeModel.getId())
                 .fullName(employeeModel.getFullname())
+                .role(employeeModel.getAccessRight().getPosition())
+                .email(employeeModel.getEmail())
                 .build();
     }
 }

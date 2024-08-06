@@ -15,5 +15,8 @@ public class GetEmployeeListSchema {
     public static class Employee {
         private int id;
         private String fullName;
+        private String role;
+        private String phoneNumber;
+        private String email;
     }
 }
