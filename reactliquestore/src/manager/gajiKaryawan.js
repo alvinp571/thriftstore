@@ -285,7 +285,6 @@ export default function GajiKaryawan() {
 
     fetchData()
       .then(res => {
-        console.log(res.data);
         const employeeOptions = res.data.employeeList.map(e => ({"id": e.id, "label": e.fullName}));
         setEmployeeOptions(employeeOptions);
       });

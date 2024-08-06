@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
@@ -13,7 +13,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {visuallyHidden} from '@mui/utils';
 import axios from 'axios';
@@ -32,7 +31,6 @@ import {
 } from '@mui/material';
 import SupervisorSidebar from './sidebar';
 import {animated, useSpring} from '@react-spring/web';
-import {format} from 'date-fns';
 import {AccountCircle} from '@mui/icons-material';
 import {useAuth} from '../authContext';
 
@@ -83,16 +81,8 @@ function stableSort(array, comparator) {
 const headCells = [
   {id: 'fullname', numeric: false, disablePadding: false, label: 'Nama Lengkap'},
   {id: 'jabatan', numeric: false, disablePadding: false, label: 'Posisi'},
-  {id: 'tanggallahir', numeric: false, disablePadding: false, label: 'Tanggal Lahir'},
-  {id: 'age', numeric: true, disablePadding: false, label: 'Umur'},
   {id: 'nomorwa', numeric: true, disablePadding: false, label: 'Nomor HP'},
   {id: 'email', numeric: false, disablePadding: false, label: 'Email'},
-  {id: 'username', numeric: false, disablePadding: false, label: 'Username'},
-  {id: 'jam_masuk', numeric: false, disablePadding: false, label: 'Jam Masuk'},
-  {id: 'jadwal_libur', numeric: false, disablePadding: false, label: 'Jadwal Libur'},
-  {id: 'firstjoindate', numeric: false, disablePadding: false, label: 'Tanggal Pertama Bekerja'},
-  {id: 'lastupdate', numeric: false, disablePadding: false, label: 'Last Update'},
-  {id: 'status', numeric: false, disablePadding: false, label: 'Status'},
   {id: 'aksi', numeric: false, disablePadding: false,}
 ];
 
@@ -242,25 +232,62 @@ export default function DataKaryawan() {
   const [accessRight, setAccessRight] = useState('');
   const [rolesKaryawan, setRolesKaryawan] = useState([]);
   const [status, setStatus] = useState('');
-  const listStatus = ['active', 'suspended', 'inactive', 'unknown'];
 
   const [openTambah, setOpenTambah] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
   const [openLogout, setOpenLogout] = useState(false);
   const handleCloseTambah = () => setOpenTambah(false);
   const handleCloseEdit = () => setOpenEdit(false);
-  const handleOpenDelete = () => setOpenDelete(true);
-  const handleCloseDelete = () => setOpenDelete(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const {auth, logout} = useAuth();
   const getUsername = auth.user ? auth.user.username : '';
 
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    return timeString.slice(0, 5); // Mengambil substring dari posisi 0 sampai 5
+  const [employeeList, setEmployeeList] = useState([]);
+
+  // Form values
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState({});
+  const [fullName, setFullName] = useState();
+  const [workingHours, setWorkingHours] = useState();
+  const [payPerHour, setPayPerHour] = useState();
+  const [overtimePay, setOvertimePay] = useState();
+  const [foodAllowance, setFoodAllowance] = useState();
+
+  // Get employee list
+  useEffect(() => {
+    const fetchData = async () => await axios.get(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}`);
+
+    fetchData().then(res => setEmployeeList(res.data.employeeList));
+  }, []);
+
+  // Handle open edit employee modal
+  const handleOpenEdit = async (employeeId) => {
+    const employeeData = await axios.get(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${employeeId}`)
+      .then(res => res.data);
+
+    setSelectedEmployeeId(employeeId);
+    setFullName(employeeData.payDetail.fullName);
+    setWorkingHours(employeeData.payDetail.workingHours);
+    setPayPerHour(employeeData.payDetail.payPerHour);
+    setOvertimePay(employeeData.payDetail.overtimePay);
+    setFoodAllowance(employeeData.payDetail.foodAllowance);
+
+    setOpenEdit(true);
   };
+
+  const handleUpdateEmployee = async () => {
+    const response = await axios.put(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${selectedEmployeeId}`, {
+      "payDetail": {
+        "fullName": fullName,
+        "workingHours": workingHours,
+        "payPerHour": payPerHour,
+        "overtimePay": overtimePay,
+        "foodAllowance": foodAllowance
+      }
+    }).then(res => res.data);
+
+    setOpenEdit(false);
+  }
 
   const fetchDataKaryawan = async () => {
     try {
@@ -338,28 +365,6 @@ export default function DataKaryawan() {
     setPage(0);
   };
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-
-  const visibleRows = useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [order, orderBy, page, rowsPerPage, rows],
-  );
-
-
-  const removeSeconds = (timeString) => {
-    if (timeString) {
-      const timeParts = timeString.split(':');
-      return `${timeParts[0]}:${timeParts[1]}`;
-    }
-    return '';
-  };
-
   const optRoles = rolesKaryawan.map(item => ({
     label: item.position,
     value: item.id,
@@ -377,102 +382,6 @@ export default function DataKaryawan() {
     setFirstjoindate('');
     setEntryhour('');
     setJadwal_libur('');
-  };
-
-  const handleOpenEdit = async (id) => {
-    fetchDataRoles();
-    setOpenEdit(true);
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/manager/getEditDataKaryawan?idEmployee=${id}`);
-      console.log(response.data);
-      setId(response.data.id);
-      setFullname(response.data.fullname);
-      setAccessRight(response.data.accessRight.id);
-      const formattedBirthDate = format(new Date(response.data.birthdate), 'yyyy-MM-dd');
-      setBirthdate(formattedBirthDate);
-      setPhonenumber(response.data.phonenumber);
-      setEmail(response.data.email);
-      setUsername(response.data.username);
-      const formattedFirstJoinDate = format(new Date(response.data.firstjoindate), 'yyyy-MM-dd');
-      setFirstjoindate(formattedFirstJoinDate);
-      const formattedEntryhour = removeSeconds(response.data.jam_masuk);
-      setEntryhour(formattedEntryhour);
-      setJadwal_libur(response.data.jadwal_libur);
-      setStatus(response.data.status);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const handleConfirmEdit = async (e) => {
-    e.preventDefault();
-    if (validate()) {
-      const jam_masuk = `${entryhour}:00`;
-
-      console.log(id);
-      console.log(fullname);
-      console.log(accessRight);
-      console.log(birthdate);
-      console.log(phonenumber);
-      console.log(email);
-      console.log(username);
-      console.log(firstjoindate);
-      console.log(jam_masuk);
-      console.log(jadwal_libur);
-      try {
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/manager/editKaryawan`, {
-          fullname,
-          accessRight,
-          birthdate,
-          phonenumber,
-          email,
-          username,
-          firstjoindate,
-          jam_masuk,
-          jadwal_libur,
-          status,
-          id
-        });
-        console.log(response.data);
-        setShowSuccessUpdate(true);
-        setMessageUpdate("Berhasil Ubah Data Karyawan");
-        setTimeout(() => {
-          setShowSuccessUpdate(false);
-        }, 5000);
-        fetchDataKaryawan();
-      } catch (error) {
-        setErrors(error.response);
-        setMsgError("Gagal Ubah Data Karyawan");
-        setShowError(true);
-        setTimeout(() => {
-          setShowError(false);
-        }, 5000);
-      }
-      setOpenEdit(false);
-    } else {
-      console.log("Validation failed");
-    }
-  };
-
-  const handleConfirmDelete = async (id) => {
-    try {
-      const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/manager/deleteKaryawan/${id}`);
-      console.log('Employee deleted:', response.data);
-      setShowSuccessDelete(true);
-      setMessageDelete("Berhasil Hapus Karyawan");
-      setTimeout(() => {
-        setShowSuccessDelete(false);
-      }, 5000);
-      fetchDataKaryawan();
-    } catch (error) {
-      console.error('Error deleting employee:', error);
-      setMsgError("Gagal Hapus Karyawan");
-      setShowError(true);
-      setTimeout(() => {
-        setShowError(false);
-      }, 5000);
-    }
-    setOpenDelete(false);
   };
 
   const handleConfirmTambah = async (e) => {
@@ -602,6 +511,7 @@ export default function DataKaryawan() {
               {msgError}
             </Alert>
           )}
+
           <Box sx={{width: '100%'}}>
             <Paper sx={{width: '100%', mb: 2}}>
               <TableContainer>
@@ -616,256 +526,28 @@ export default function DataKaryawan() {
                     rowCount={rows.length}
                   />
                   <TableBody>
-                    {visibleRows.map((row) => {
+                    {employeeList && employeeList.map((employee) => {
                       return (
-                        <>
-                          <TableRow
-                            hover
-                            tabIndex={-1}
-                            key={row.id}
-                            sx={{cursor: 'pointer'}}
-                          >
-                            <TableCell align="center">{row.fullname}</TableCell>
-                            <TableCell align="center">{row.jabatan}</TableCell>
-                            <TableCell align="center">{row.tanggallahir}</TableCell>
-                            <TableCell align="center">{row.umur}</TableCell>
-                            <TableCell align="center">{row.nomorwa}</TableCell>
-                            <TableCell align="center">{row.email}</TableCell>
-                            <TableCell align="center">{row.username}</TableCell>
-                            <TableCell align="center">{formatTime(row.jam_masuk)}</TableCell>
-                            <TableCell align="center">{row.jadwal_libur}</TableCell>
-                            <TableCell align="center">{row.firstjoindate}</TableCell>
-                            <TableCell align="center">{row.lastupdate || '-'}</TableCell>
-                            <TableCell align="center">
-                              {row.status === "active" && (
-                                <Button style={{
-                                  borderRadius: '25px',
-                                  border: '3px solid black',
-                                  color: 'white',
-                                  backgroundColor: 'green'
-                                }}>
-                                  Bekerja
-                                </Button>
-                              )}
-                              {row.status === "suspended" && (
-                                <Button style={{
-                                  borderRadius: '25px',
-                                  border: '3px solid black',
-                                  color: 'white',
-                                  backgroundColor: 'yellowgreen'
-                                }}>
-                                  Suspended
-                                </Button>
-                              )}
-                              {row.status === "inactive" && (
-                                <Button style={{
-                                  borderRadius: '25px',
-                                  border: '3px solid black',
-                                  color: 'white',
-                                  backgroundColor: 'red'
-                                }}>
-                                  Inactive
-                                </Button>
-                              )}
-                              {row.status === "unknown" && (
-                                <Button style={{
-                                  borderRadius: '25px',
-                                  border: '3px solid black',
-                                  color: 'white',
-                                  backgroundColor: 'grey'
-                                }}>
-                                  Unknown
-                                </Button>
-                              )}
-                            </TableCell>
-                            <TableCell sx={{display: 'flex'}}>
-                              <Tooltip title="edit">
-                                <IconButton onClick={() => handleOpenEdit(row.id)}>
-                                  <EditIcon/>
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton onClick={handleOpenDelete}>
-                                  <DeleteIcon/>
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-
-                          {/* ini modal edit data karyawan */}
-                          <Modal
-                            aria-labelledby="spring-modal-title"
-                            aria-describedby="spring-modal-description"
-                            open={openEdit}
-                            onClose={handleCloseEdit}
-                            closeAfterTransition
-                            slots={{backdrop: Backdrop}}
-                            slotProps={{
-                              backdrop: {
-                                TransitionComponent: Fade,
-                              },
-                            }}
-                          >
-                            <Fade in={openEdit}>
-                              <Box sx={styleModalBesar}>
-                                <form>
-                                  <Grid container spacing={3}>
-                                    <Grid item xs={12}>
-                                      <Typography>Nama Lengkap *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        value={fullname}
-                                        error={!!errors.fullname}
-                                        onChange={(e) => setFullname(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Posisi *</Typography>
-                                      <Autocomplete
-                                        fullWidth
-                                        options={optRoles}
-                                        getOptionLabel={(option) => option.label}
-                                        getOptionSelected={(option, value) => option.value === value}
-                                        renderInput={(params) => <TextField {...params} />}
-                                        value={optRoles.find((option) => option.value === accessRight)}
-                                        error={!!errors.accessRight}
-                                        onChange={(e, value) => setAccessRight(value ? value.value : '')}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Tanggal Lahir *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        type='date'
-                                        value={birthdate}
-                                        error={!!errors.birthdate}
-                                        onChange={(e) => setBirthdate(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Nomor HP *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        type='tel'
-                                        inputMode='tel'
-                                        value={phonenumber}
-                                        error={!!errors.phonenumber}
-                                        onChange={(e) => setPhonenumber(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Email *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        type='email'
-                                        value={email}
-                                        error={!!errors.email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Username *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        value={username}
-                                        error={!!errors.username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Tanggal Pertama Bekerja *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        type='date'
-                                        value={firstjoindate}
-                                        error={!!errors.firstjoindate}
-                                        onChange={(e) => setFirstjoindate(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                      <Typography>Jam Masuk Harian *</Typography>
-                                      <TextField
-                                        fullWidth
-                                        type='time'
-                                        value={entryhour}
-                                        error={!!errors.entryhour}
-                                        onChange={(e) => setEntryhour(e.target.value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                      <Typography>Jadwal Libur *</Typography>
-                                      <Autocomplete
-                                        fullWidth
-                                        options={optHarilibur}
-                                        value={jadwal_libur}
-                                        renderInput={(params) => <TextField {...params} />}
-                                        error={!!errors.jadwal_libur}
-                                        onChange={(event, value) => setJadwal_libur(value)}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Typography>Status *</Typography>
-                                      <Autocomplete
-                                        fullWidth
-                                        value={status}
-                                        onChange={(event, newValue) => {
-                                          setStatus(newValue)
-                                        }}
-                                        options={listStatus}
-                                        renderInput={(params) => <TextField {...params} />}
-                                        error={!!errors.status}
-                                      />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                      <Button variant="contained" onClick={handleConfirmEdit} fullWidth
-                                              style={{backgroundColor: 'black', color: 'white'}}>
-                                        Submit
-                                      </Button>
-                                    </Grid>
-                                  </Grid>
-                                </form>
-                              </Box>
-                            </Fade>
-                          </Modal>
-
-                          <Modal
-                            aria-labelledby="spring-modal-title"
-                            aria-describedby="spring-modal-description"
-                            open={openDelete}
-                            onClose={handleCloseDelete}
-                            closeAfterTransition
-                            slots={{backdrop: Backdrop}}
-                            slotProps={{
-                              backdrop: {
-                                TransitionComponent: Fade,
-                              },
-                            }}
-                          >
-                            <Fade in={openDelete}>
-                              <Box sx={styleModal}>
-                                <Typography id="spring-modal-title" variant="h6" component="h2">
-                                  Apakah anda yakin ingin membuang data ini?
-                                </Typography>
-                                <Box sx={{mt: 2}}>
-                                  <Button variant="outlined" onClick={() => handleConfirmDelete(row.id)}
-                                          sx={{mr: 2, backgroundColor: '#FE8A01', color: 'white'}}>
-                                    Ya
-                                  </Button>
-                                  <Button variant="outlined" onClick={handleCloseDelete}>
-                                    Tidak
-                                  </Button>
-                                </Box>
-                              </Box>
-                            </Fade>
-                          </Modal>
-                        </>
+                        <TableRow
+                          hover
+                          tabIndex={-1}
+                          key={employee.id}
+                          sx={{cursor: 'pointer'}}
+                        >
+                          <TableCell align="center">{employee.fullName}</TableCell>
+                          <TableCell align="center">{employee.role}</TableCell>
+                          <TableCell align="center">{employee.phoneNumber}</TableCell>
+                          <TableCell align="center">{employee.email}</TableCell>
+                          <TableCell sx={{display: 'flex'}}>
+                            <Tooltip title="edit">
+                              <IconButton onClick={() => handleOpenEdit(employee.id)}>
+                                <EditIcon/>
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
-                    {emptyRows > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={10}/>
-                      </TableRow>
-                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -878,9 +560,93 @@ export default function DataKaryawan() {
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />
+
+              {/* ini modal edit data karyawan */}
+              <Modal
+                aria-labelledby="spring-modal-title"
+                aria-describedby="spring-modal-description"
+                open={openEdit}
+                onClose={handleCloseEdit}
+                closeAfterTransition
+                slots={{backdrop: Backdrop}}
+                slotProps={{
+                  backdrop: {
+                    TransitionComponent: Fade,
+                  },
+                }}
+              >
+                <Fade in={openEdit}>
+                  <Box sx={styleModalBesar}>
+                    <form>
+                      <Grid container spacing={3}>
+                        {/* Full Name */}
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            disabled
+                            label={"Full Name"}
+                            value={fullName}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"number"}
+                            label={"Jam Kerja Pokok"}
+                            value={workingHours}
+                            onChange={e => setWorkingHours(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"number"}
+                            label={"Gaji Per Jam"}
+                            value={payPerHour}
+                            onChange={e => setPayPerHour(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"number"}
+                            label={"Gaji Lembur"}
+                            value={overtimePay}
+                            onChange={e => setOvertimePay(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"number"}
+                            label={"Uang Makan"}
+                            value={foodAllowance}
+                            onChange={e => setFoodAllowance(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Button
+                            variant="contained"
+                            onClick={handleUpdateEmployee}
+                            fullWidth
+                            style={{backgroundColor: 'black', color: 'white'}}>
+                            Update
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </form>
+                  </Box>
+                </Fade>
+              </Modal>
             </Paper>
           </Box>
+
           <Button style={btnTambahKaryawan} onClick={handleOpenTambah}>+ Tambah Karyawan</Button>
+
           {/* ini modal tambah tipe */}
           <Modal
             aria-labelledby="spring-modal-title"

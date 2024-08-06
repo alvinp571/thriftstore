@@ -77,6 +77,7 @@ function AppWrapper() {
           <Route path="/manager/karyawan/presensi/clockout" element={<ClockOutManager/>}/>
           <Route path="/manager/karyawan/dataKaryawan" element={<DataKaryawan/>}/>
           <Route path="/manager/karyawan/gajiKaryawan" element={<GajiKaryawan/>}/>
+          <Route path="/manager/karyawan/manageEmployee" element={<ManageEmployee/>}/>
           <Route path="/manager/stok/reviewStok" element={<ReviewStokManager/>}/>
           <Route path="/manager/stok/tipeBarang" element={<TipeStokManager/>}/>
           <Route path="/manager/orderDelivery/pengiriman" element={<PengirimanManager/>}/>
