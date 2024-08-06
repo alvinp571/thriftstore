@@ -172,7 +172,7 @@ function LoginPage() {
               <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
             </Grid>
           </Grid>
-          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
+          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'right' }}>Forgot Password ?</Typography>
         </Box>
     </Container>
   </>
