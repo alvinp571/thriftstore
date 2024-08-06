@@ -6,9 +6,12 @@ import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
+import com.liquestore.dto.employee.UpdateEmployeeRequest;
+import com.liquestore.dto.employee.UpdateEmployeeSchema;
 import com.liquestore.mapper.GetEmployeeListSchemaMapper;
 import com.liquestore.mapper.GetEmployeeSchemaMapper;
 import com.liquestore.mapper.GetPayDetailSchemaMapper;
+import com.liquestore.mapper.UpdateEmployeeSchemaMapper;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.model.EmployeePayDetail;
@@ -42,6 +45,7 @@ public class EmployeeService {
     private final GetEmployeeListSchemaMapper getEmployeeListSchemaMapper;
     private final GetEmployeeSchemaMapper getEmployeeSchemaMapper;
     private final GetPayDetailSchemaMapper getPayDetailResponseMapper;
+    private final UpdateEmployeeSchemaMapper updateEmployeeSchemaMapper;
 
     public GetEmployeeListSchema getEmployeeList() {
         List<EmployeeModel> employeeList = employeeRepository.findAll(Sort.by("fullname"));
@@ -72,6 +76,12 @@ public class EmployeeService {
         var monthlyPayCalculation = calculateMonthlyPay(dailyPayslip);
 
         return getPayDetailResponseMapper.map(dailyPayslip, monthlyPayCalculation);
+    }
+
+    public UpdateEmployeeSchema updateEmployee(int id, UpdateEmployeeRequest updateEmployeeRequest) {
+        EmployeePayDetail updatedPayDetail = updatePayDetail(id, updateEmployeeRequest.getPayDetail());
+
+        return updateEmployeeSchemaMapper.map(id, updatedPayDetail);
     }
 
     private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee, int month,
@@ -186,5 +196,19 @@ public class EmployeeService {
                 .lateCount(lateCount)
                 .netPay(netPay)
                 .build();
+    }
+
+    private EmployeePayDetail updatePayDetail(int employeeId, UpdateEmployeeRequest.PayDetail payDetailRequest) {
+        return employeePayDetailRepository.findByEmployeeId(employeeId)
+                .map(employeePayDetail -> {
+                    employeePayDetail.setWorkingHours(payDetailRequest.getWorkingHours());
+                    employeePayDetail.setPayPerHour(payDetailRequest.getPayPerHour());
+                    employeePayDetail.setPaidOffDay(Boolean.TRUE.equals(payDetailRequest.getPaidOffDay()) ? 1 : 0);
+                    employeePayDetail.setOvertimePay(payDetailRequest.getOvertimePay());
+                    employeePayDetail.setFoodAllowance(payDetailRequest.getFoodAllowance());
+
+                    return employeePayDetailRepository.save(employeePayDetail);
+                })
+                .orElseThrow(RuntimeException::new);
     }
 }
