@@ -48,9 +48,18 @@ public class EmployeeService {
     private final UpdateEmployeeSchemaMapper updateEmployeeSchemaMapper;
 
     public GetEmployeeListSchema getEmployeeList() {
-        List<EmployeeModel> employeeList = employeeRepository.findAll(Sort.by("fullname"));
+        List<GetEmployeeListSchema.Employee> employeeList = employeeRepository.findAll(Sort.by("fullname")).stream()
+                .map(e -> {
+                    EmployeePayDetail employeePayDetail = employeePayDetailRepository.findByEmployeeId(e.getId())
+                            .orElseThrow(RuntimeException::new);
 
-        return getEmployeeListSchemaMapper.map(employeeList);
+                    return getEmployeeListSchemaMapper.mapEmployee(e, employeePayDetail);
+                })
+                .toList();
+
+        return GetEmployeeListSchema.builder()
+                .employeeList(employeeList)
+                .build();
     }
 
     public GetEmployeeSchema getEmployee(int id) {

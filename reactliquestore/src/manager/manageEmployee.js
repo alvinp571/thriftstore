@@ -13,12 +13,24 @@ import Tooltip from '@mui/material/Tooltip';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import styled from 'styled-components';
-import {Alert, Backdrop, Button, CssBaseline, Drawer, Grid, Modal, TextField, Typography} from '@mui/material';
+import {
+  Alert,
+  Backdrop,
+  Button,
+  Checkbox,
+  CssBaseline,
+  Drawer,
+  Grid,
+  Modal,
+  TextField,
+  Typography
+} from '@mui/material';
 import SupervisorSidebar from './sidebar';
 import {animated, useSpring} from '@react-spring/web';
 import {AccountCircle} from '@mui/icons-material';
 import {useAuth} from '../authContext';
 import TableHead from "@mui/material/TableHead";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 const RootContainer = styled.div`
     display: flex;
@@ -26,13 +38,6 @@ const RootContainer = styled.div`
     align-items: center;
     justify-content: center;
 `;
-
-const tableHeaders = [
-  {id: 'fullName', numeric: false, disablePadding: false, label: 'Nama Lengkap'},
-  {id: 'role', numeric: false, disablePadding: false, label: 'Posisi'},
-  {id: 'phoneNumber', numeric: true, disablePadding: false, label: 'Nomor HP'},
-  {id: 'email', numeric: false, disablePadding: false, label: 'Email'}
-];
 
 const Fade = React.forwardRef(function Fade(props, ref) {
   const {
@@ -116,6 +121,15 @@ export default function DataKaryawan() {
 
   const getUsername = auth.user ? auth.user.username : '';
 
+  // Table values
+  const tableHeaders = [
+    {id: 'fullName', label: 'Nama Lengkap'},
+    {id: 'workingHours', label: 'Jam Kerja Pokok'},
+    {id: 'payPerHour', label: 'Gaji Per Jam'},
+    {id: 'paidOffDay', label: 'Gaji Libur'},
+    {id: 'overtimePay', label: 'Gaji Lembur'},
+    {id: 'foodAllowance', label: 'Uang Makan'}
+  ];
   const [employeeList, setEmployeeList] = useState([]);
 
   // Form values
@@ -124,14 +138,15 @@ export default function DataKaryawan() {
   const [fullName, setFullName] = useState("");
   const [workingHours, setWorkingHours] = useState("");
   const [payPerHour, setPayPerHour] = useState("");
+  const [paidOffDay, setPaidOffDay] = useState(false);
   const [overtimePay, setOvertimePay] = useState("");
   const [foodAllowance, setFoodAllowance] = useState("");
 
+  const fetchEmployeeList = async () => await axios.get(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}`);
+
   // Get employee list
   useEffect(() => {
-    const fetchData = async () => await axios.get(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}`);
-
-    fetchData().then(res => setEmployeeList(res.data.employeeList));
+    fetchEmployeeList().then(res => setEmployeeList(res.data.employeeList));
   }, []);
 
   // Handle open edit employee modal
@@ -140,7 +155,7 @@ export default function DataKaryawan() {
       .then(res => res.data);
 
     setSelectedEmployeeId(employeeId);
-    setFullName(employeeData.payDetail.fullName);
+    setFullName(employeeData.fullName);
     setWorkingHours(employeeData.payDetail.workingHours);
     setPayPerHour(employeeData.payDetail.payPerHour);
     setOvertimePay(employeeData.payDetail.overtimePay);
@@ -155,11 +170,13 @@ export default function DataKaryawan() {
         "fullName": fullName,
         "workingHours": workingHours,
         "payPerHour": payPerHour,
+        "paidOffDay": paidOffDay,
         "overtimePay": overtimePay,
         "foodAllowance": foodAllowance
       }
     });
 
+    fetchEmployeeList().then(res => setEmployeeList(res.data.employeeList));
     setOpenEdit(false);
   }
 
@@ -270,9 +287,13 @@ export default function DataKaryawan() {
                           sx={{cursor: 'pointer'}}
                         >
                           <TableCell align="center">{employee.fullName}</TableCell>
-                          <TableCell align="center">{employee.role}</TableCell>
-                          <TableCell align="center">{employee.phoneNumber}</TableCell>
-                          <TableCell align="center">{employee.email}</TableCell>
+                          <TableCell align="center">{employee.payDetail.workingHours}</TableCell>
+                          <TableCell align="center">{employee.payDetail.payPerHour}</TableCell>
+                          <TableCell align="center">{employee.payDetail.paidOffDay ? "YA" : "TIDAK"}</TableCell>
+                          <TableCell align="center">{employee.payDetail.overtimePay}</TableCell>
+                          <TableCell align="center">{employee.payDetail.foodAllowance}</TableCell>
+
+                          {/* Edit employee button */}
                           <TableCell sx={{display: 'flex'}}>
                             <Tooltip title="edit">
                               <IconButton onClick={() => handleOpenEdit(employee.id)}>
@@ -307,12 +328,7 @@ export default function DataKaryawan() {
                       <Grid container spacing={3}>
                         {/* Full Name */}
                         <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            disabled
-                            label={"Full Name"}
-                            value={fullName}
-                          />
+                          <Typography variant={"h5"}>{fullName}</Typography>
                         </Grid>
                         <Grid item xs={12}>
                           <TextField
@@ -333,6 +349,14 @@ export default function DataKaryawan() {
                             value={payPerHour}
                             onChange={e => setPayPerHour(e.target.value)}
                           />
+                        </Grid>
+                        <Grid item xs={12} alignItems="center">
+                          <FormControlLabel
+                            control={<Checkbox/>}
+                            labelPlacement={"start"}
+                            label={"Gaji Hari Libur"}
+                            checked={paidOffDay}
+                            onChange={e => setPaidOffDay(e.target.checked)}/>
                         </Grid>
                         <Grid item xs={12}>
                           <TextField
