@@ -253,7 +253,7 @@ export default function GajiKaryawan() {
     if (!currentEmployee || !currentEmployee.id) return;
 
     const fetchData = async () => {
-      const month = currentDate.getMonth();
+      const month = currentDate.getMonth() + 1;
       const year = currentDate.getFullYear();
 
       const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}/pay-detail?month=${month}&year=${year}`;

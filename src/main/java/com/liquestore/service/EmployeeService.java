@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -55,7 +56,12 @@ public class EmployeeService {
     public GetPayDetailSchema getPayDetail(int employeeId, int month, int year) {
         EmployeeModel employee = employeeRepository.findById(employeeId)
                 .orElseThrow(RuntimeException::new);
-        var attendanceList = absensiRepository.findByEmployeeidOrderByTodaydateAsc(employeeId);
+
+        Date startDate = Date.valueOf(LocalDate.of(year, month, 1));
+        Date endDate = Date.valueOf(LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth()));
+        var attendanceList =
+                absensiRepository.findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(employeeId, startDate, endDate);
+
         var dailyPayDetailList = buildDailyPayDetailList(employee, month, year, attendanceList);
         var monthlyPayCalculation = calculateMonthlyPay(dailyPayDetailList);
 
