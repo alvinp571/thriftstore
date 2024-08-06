@@ -5,34 +5,20 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import EditIcon from '@mui/icons-material/Edit';
-import {visuallyHidden} from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
-import {
-  Alert,
-  Autocomplete,
-  Backdrop,
-  Button,
-  CssBaseline,
-  Drawer,
-  Grid,
-  Modal,
-  TextField,
-  Typography
-} from '@mui/material';
+import {Alert, Backdrop, Button, CssBaseline, Drawer, Grid, Modal, TextField, Typography} from '@mui/material';
 import SupervisorSidebar from './sidebar';
 import {animated, useSpring} from '@react-spring/web';
 import {AccountCircle} from '@mui/icons-material';
 import {useAuth} from '../authContext';
+import TableHead from "@mui/material/TableHead";
 
 const RootContainer = styled.div`
     display: flex;
@@ -41,94 +27,12 @@ const RootContainer = styled.div`
     justify-content: center;
 `;
 
-const btnTambahKaryawan = {
-  justifyContent: 'center',
-  width: '15vw',
-  borderRadius: '10px',
-  backgroundColor: '#FE8A01',
-  color: 'black',
-  border: '3px solid black'
-};
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-const headCells = [
-  {id: 'fullname', numeric: false, disablePadding: false, label: 'Nama Lengkap'},
-  {id: 'jabatan', numeric: false, disablePadding: false, label: 'Posisi'},
-  {id: 'nomorwa', numeric: true, disablePadding: false, label: 'Nomor HP'},
-  {id: 'email', numeric: false, disablePadding: false, label: 'Email'},
-  {id: 'aksi', numeric: false, disablePadding: false,}
+const tableHeaders = [
+  {id: 'fullName', numeric: false, disablePadding: false, label: 'Nama Lengkap'},
+  {id: 'role', numeric: false, disablePadding: false, label: 'Posisi'},
+  {id: 'phoneNumber', numeric: true, disablePadding: false, label: 'Nomor HP'},
+  {id: 'email', numeric: false, disablePadding: false, label: 'Email'}
 ];
-
-function EnhancedTableHead(props) {
-  const {order, orderBy, onRequestSort} =
-    props;
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={'center'}
-            // align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-EnhancedTableHead.propTypes = {
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
-};
 
 const Fade = React.forwardRef(function Fade(props, ref) {
   const {
@@ -201,57 +105,27 @@ const styleModalBesar = {
 
 export default function DataKaryawan() {
   const drawerWidth = 300;
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('calories');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [rows, setRows] = useState([]);
-  const [showSuccessInsert, setShowSuccessInsert] = useState(false);
-  const [messageInsert, setMessageInsert] = useState('');
-  const [showSuccessUpdate, setShowSuccessUpdate] = useState(false);
-  const [messageUpdate, setMessageUpdate] = useState('');
-  const [showSuccessDelete, setShowSuccessDelete] = useState(false);
-  const [messageDelete, setMessageDelete] = useState('');
-  const [showError, setShowError] = useState(false);
-  const [msgError, setMsgError] = useState();
-  const [errors, setErrors] = useState({});
 
-  // variabel insert
-
-  // variabel edit
-  const optHarilibur = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
-  const [id, setId] = useState('');
-  const [username, setUsername] = useState('');
-  const [fullname, setFullname] = useState('');
-  const [email, setEmail] = useState('');
-  const [phonenumber, setPhonenumber] = useState('');
-  const [birthdate, setBirthdate] = useState('');
-  const [firstjoindate, setFirstjoindate] = useState('');
-  const [entryhour, setEntryhour] = useState('');
-  const [jadwal_libur, setJadwal_libur] = useState('');
-  const [accessRight, setAccessRight] = useState('');
-  const [rolesKaryawan, setRolesKaryawan] = useState([]);
-  const [status, setStatus] = useState('');
-
-  const [openTambah, setOpenTambah] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
+  const {auth, logout} = useAuth();
   const [openLogout, setOpenLogout] = useState(false);
-  const handleCloseTambah = () => setOpenTambah(false);
-  const handleCloseEdit = () => setOpenEdit(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
-  const {auth, logout} = useAuth();
+
+  const [showSuccessUpdate, setShowSuccessUpdate] = useState(false);
+  const [messageUpdate, setMessageUpdate] = useState('');
+
   const getUsername = auth.user ? auth.user.username : '';
 
   const [employeeList, setEmployeeList] = useState([]);
 
   // Form values
+  const [openEdit, setOpenEdit] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState({});
-  const [fullName, setFullName] = useState();
-  const [workingHours, setWorkingHours] = useState();
-  const [payPerHour, setPayPerHour] = useState();
-  const [overtimePay, setOvertimePay] = useState();
-  const [foodAllowance, setFoodAllowance] = useState();
+  const [fullName, setFullName] = useState("");
+  const [workingHours, setWorkingHours] = useState("");
+  const [payPerHour, setPayPerHour] = useState("");
+  const [overtimePay, setOvertimePay] = useState("");
+  const [foodAllowance, setFoodAllowance] = useState("");
 
   // Get employee list
   useEffect(() => {
@@ -276,7 +150,7 @@ export default function DataKaryawan() {
   };
 
   const handleUpdateEmployee = async () => {
-    const response = await axios.put(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${selectedEmployeeId}`, {
+    await axios.put(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${selectedEmployeeId}`, {
       "payDetail": {
         "fullName": fullName,
         "workingHours": workingHours,
@@ -284,142 +158,10 @@ export default function DataKaryawan() {
         "overtimePay": overtimePay,
         "foodAllowance": foodAllowance
       }
-    }).then(res => res.data);
+    });
 
     setOpenEdit(false);
   }
-
-  const fetchDataKaryawan = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/manager/dataKaryawan`);
-      console.log(response.data);
-      // if (response.data.status !== "inactive") {
-      //   setRows(response.data);
-      // }
-      setRows(response.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const fetchDataRoles = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/manager/getRolesKaryawan`);
-      console.log(response.data);
-      setRolesKaryawan(response.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDataKaryawan();
-  }, []);
-
-  const validate = () => {
-    let tempErrors = {};
-    if (!username || username.length > 25) {
-      tempErrors.username = 'Username harus diisi dan maksimal 25 karakter';
-    }
-    if (!fullname || fullname.length > 255) {
-      tempErrors.fullname = 'Fullname harus diisi dan maksimal 255 karakter';
-    }
-    if (!phonenumber || phonenumber.length > 20) {
-      tempErrors.phonenumber = 'Nomor WA harus diisi dan maksimal 20 karakter';
-    }
-    if (!email || email.length > 255 || !/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = 'Email harus diisi dengan format yang benar dan maksimal 255 karakter';
-    }
-    if (!accessRight) {
-      tempErrors.id = 'posisi harus diisi';
-    }
-    if (!birthdate) {
-      tempErrors.birthdate = 'Tanggal lahir harus diisi';
-    }
-    if (!firstjoindate) {
-      tempErrors.firstjoindate = 'Tanggal pertama bekerja harus diisi';
-    }
-    if (!entryhour) {
-      tempErrors.entryhour = 'Jam masuk harian harus diisi';
-    }
-    if (!jadwal_libur || jadwal_libur.length > 10) {
-      tempErrors.jadwal_libur = '=Jadwal libur harus diisi dan maksimal 20 karakter';
-    }
-
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const optRoles = rolesKaryawan.map(item => ({
-    label: item.position,
-    value: item.id,
-  }));
-
-  const handleOpenTambah = async () => {
-    setOpenTambah(true);
-    fetchDataRoles();
-    setFullname('');
-    setAccessRight('');
-    setBirthdate('');
-    setPhonenumber('');
-    setEmail('');
-    setUsername('');
-    setFirstjoindate('');
-    setEntryhour('');
-    setJadwal_libur('');
-  };
-
-  const handleConfirmTambah = async (e) => {
-    e.preventDefault();
-    if (validate()) {
-      const jam_masuk = `${entryhour}:00`;
-      try {
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/manager/tambahKaryawan`, {
-          fullname,
-          accessRight,
-          birthdate,
-          phonenumber,
-          email,
-          username,
-          firstjoindate,
-          jam_masuk,
-          jadwal_libur
-        });
-        console.log(response.data);
-        setShowSuccessInsert(true);
-        setMessageInsert("Berhasil Tambah Karyawan");
-        setTimeout(() => {
-          setShowSuccessInsert(false);
-        }, 5000);
-        fetchDataKaryawan();
-      } catch (error) {
-        setErrors(error.response);
-        setMsgError("Gagal Tambah Karyawan");
-        setShowError(true);
-        setTimeout(() => {
-          setShowError(false);
-        }, 5000);
-      }
-      setOpenTambah(false);
-    } else {
-      console.log("Validation failed");
-    }
-  };
 
   const handleLogout = () => {
     setOpenLogout(false);
@@ -491,24 +233,9 @@ export default function DataKaryawan() {
         <br></br>
         <Toolbar/>
         <RootContainer>
-          {showSuccessInsert && (
-            <Alert variant="filled" severity="success" style={{marginTop: 20, backgroundColor: '#1B9755'}}>
-              {messageInsert}
-            </Alert>
-          )}
           {showSuccessUpdate && (
             <Alert variant="filled" severity="success" style={{marginTop: 20, backgroundColor: '#1B9755'}}>
               {messageUpdate}
-            </Alert>
-          )}
-          {showSuccessDelete && (
-            <Alert variant="filled" severity="success" style={{marginTop: 20, backgroundColor: '#1B9755'}}>
-              {messageDelete}
-            </Alert>
-          )}
-          {showError && (
-            <Alert variant="filled" severity="danger" style={{marginTop: 20, backgroundColor: '#F80000'}}>
-              {msgError}
             </Alert>
           )}
 
@@ -519,12 +246,20 @@ export default function DataKaryawan() {
                   sx={{minWidth: 750}}
                   aria-labelledby="tableTitle"
                 >
-                  <EnhancedTableHead
-                    order={order}
-                    orderBy={orderBy}
-                    onRequestSort={handleRequestSort}
-                    rowCount={rows.length}
-                  />
+                  <TableHead>
+                    <TableRow>
+                      {tableHeaders.map((headers) => (
+                        <TableCell
+                          key={headers.id}
+                          align={'center'}
+                          sx={{fontWeight: "bold"}}
+                        >
+                          {headers.label}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+
                   <TableBody>
                     {employeeList && employeeList.map((employee) => {
                       return (
@@ -551,22 +286,13 @@ export default function DataKaryawan() {
                   </TableBody>
                 </Table>
               </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
 
               {/* ini modal edit data karyawan */}
               <Modal
                 aria-labelledby="spring-modal-title"
                 aria-describedby="spring-modal-description"
                 open={openEdit}
-                onClose={handleCloseEdit}
+                onClose={() => setOpenEdit(false)}
                 closeAfterTransition
                 slots={{backdrop: Backdrop}}
                 slotProps={{
@@ -644,131 +370,6 @@ export default function DataKaryawan() {
               </Modal>
             </Paper>
           </Box>
-
-          <Button style={btnTambahKaryawan} onClick={handleOpenTambah}>+ Tambah Karyawan</Button>
-
-          {/* ini modal tambah tipe */}
-          <Modal
-            aria-labelledby="spring-modal-title"
-            aria-describedby="spring-modal-description"
-            open={openTambah}
-            onClose={handleCloseTambah}
-            closeAfterTransition
-            slots={{backdrop: Backdrop}}
-            slotProps={{
-              backdrop: {
-                TransitionComponent: Fade,
-              },
-            }}
-          >
-            <Fade in={openTambah}>
-              <Box sx={styleModalBesar}>
-                <form>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography>Nama Lengkap *</Typography>
-                      <TextField
-                        fullWidth
-                        value={fullname}
-                        error={!!errors.fullname}
-                        onChange={(e) => setFullname(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>Posisi *</Typography>
-                      <Autocomplete
-                        fullWidth
-                        options={optRoles}
-                        getOptionLabel={(option) => option.label}
-                        getOptionSelected={(option, value) => option.value === value}
-                        renderInput={(params) => <TextField {...params} />}
-                        value={optRoles.find((option) => option.value === accessRight)}
-                        error={!!errors.accessRight}
-                        onChange={(e, value) => setAccessRight(value ? value.value : '')}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>Tanggal Lahir *</Typography>
-                      <TextField
-                        fullWidth
-                        type='date'
-                        value={birthdate}
-                        error={!!errors.birthdate}
-                        onChange={(e) => setBirthdate(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>Nomor HP *</Typography>
-                      <TextField
-                        fullWidth
-                        type='tel'
-                        inputMode='tel'
-                        value={phonenumber}
-                        error={!!errors.phonenumber}
-                        onChange={(e) => setPhonenumber(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>Email *</Typography>
-                      <TextField
-                        fullWidth
-                        type='email'
-                        value={email}
-                        error={!!errors.email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>Username *</Typography>
-                      <TextField
-                        fullWidth
-                        value={username}
-                        error={!!errors.username}
-                        onChange={(e) => setUsername(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>Tanggal Pertama Bekerja *</Typography>
-                      <TextField
-                        fullWidth
-                        type='date'
-                        value={firstjoindate}
-                        error={!!errors.firstjoindate}
-                        onChange={(e) => setFirstjoindate(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography>Jam Masuk Harian *</Typography>
-                      <TextField
-                        fullWidth
-                        type='time'
-                        value={entryhour}
-                        error={!!errors.entryhour}
-                        onChange={(e) => setEntryhour(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography>Jadwal Libur *</Typography>
-                      <Autocomplete
-                        fullWidth
-                        options={optHarilibur}
-                        value={jadwal_libur}
-                        renderInput={(params) => <TextField {...params} />}
-                        error={!!errors.jadwal_libur}
-                        onChange={(event, value) => setJadwal_libur(value)}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Button variant="contained" onClick={handleConfirmTambah} fullWidth
-                              style={{backgroundColor: 'black', color: 'white'}}>
-                        Submit
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </form>
-              </Box>
-            </Fade>
-          </Modal>
         </RootContainer>
       </Box>
     </Box>
