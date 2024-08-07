@@ -26,6 +26,7 @@ public class GetEmployeeSchemaMapper {
                 .fullName(employee.getFullname())
                 .scheduledClockIn(scheduledClockIn)
                 .offDay(offDay)
+                .phoneNumber(employee.getPhonenumber())
                 .payDetail(payDetail)
                 .build();
     }

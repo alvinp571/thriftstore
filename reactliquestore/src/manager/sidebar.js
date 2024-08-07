@@ -63,8 +63,7 @@ function Sidebar() {
             <ListItem button component={Link} to="/manager/karyawan/gajiKaryawan">
               <ListItemText primary="Gaji Karyawan"/>
             </ListItem>
-            <ListItem button component={Link} to="">
-              {/* TODO: Add redirect link */}
+            <ListItem button component={Link} to="/manager/karyawan/manageEmployee">
               <ListItemText primary="Pengaturan Karyawan"/>
             </ListItem>
           </List>
