@@ -13,7 +13,7 @@ import com.liquestore.dto.employee.UpdateEmployeeSchema;
 import com.liquestore.mapper.CreateEmployeeSchemaMapper;
 import com.liquestore.mapper.GetEmployeeListSchemaMapper;
 import com.liquestore.mapper.GetEmployeeSchemaMapper;
-import com.liquestore.mapper.GetPayDetailSchemaMapper;
+import com.liquestore.mapper.GetMonthlyPayslipSchemaMapper;
 import com.liquestore.mapper.UpdateEmployeeSchemaMapper;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.AccessRightModel;
@@ -54,7 +54,7 @@ public class EmployeeService {
     private final CreateEmployeeSchemaMapper createEmployeeSchemaMapper;
     private final GetEmployeeListSchemaMapper getEmployeeListSchemaMapper;
     private final GetEmployeeSchemaMapper getEmployeeSchemaMapper;
-    private final GetPayDetailSchemaMapper getPayDetailResponseMapper;
+    private final GetMonthlyPayslipSchemaMapper getMonthlyPayslipResponseMapper;
     private final UpdateEmployeeSchemaMapper updateEmployeeSchemaMapper;
 
     public CreateEmployeeSchema createEmployee(CreateEmployeeRequest newEmployee) {
@@ -124,7 +124,7 @@ public class EmployeeService {
         var dailyPayslip = buildDailyPayslipList(employee, employeePayDetail, month, year, attendanceList);
         var monthlyPayCalculation = calculateMonthlyPay(dailyPayslip);
 
-        return getPayDetailResponseMapper.map(dailyPayslip, monthlyPayCalculation);
+        return getMonthlyPayslipResponseMapper.map(dailyPayslip, monthlyPayCalculation);
     }
 
     public UpdateEmployeeSchema updateEmployee(int id, UpdateEmployeeRequest updateEmployeeRequest) {
@@ -152,14 +152,14 @@ public class EmployeeService {
 
             if (day == attendanceDay) {
                 DailyPayCalculation dailyPayCalculation = calculateDailyPay(employee, employeePayDetail, attendance);
-                var dailyPayDetail = getPayDetailResponseMapper.mapDailyPayDetail(attendance, dailyPayCalculation,
+                var dailyPayDetail = getMonthlyPayslipResponseMapper.mapDailyPayDetail(attendance, dailyPayCalculation,
                         AttendanceStatus.PRESENT);
                 dailyPayslipList.add(dailyPayDetail);
 
                 index++;
             }
             else {
-                dailyPayslipList.add(getPayDetailResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
+                dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
             }
 
             day++;
@@ -167,7 +167,7 @@ public class EmployeeService {
 
         while (day <= lengthOfMonth) {
             LocalDate date = LocalDate.of(year, month, day);
-            dailyPayslipList.add(getPayDetailResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
+            dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
 
             day++;
         }
