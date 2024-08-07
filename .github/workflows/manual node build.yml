@@ -35,6 +35,7 @@ jobs:
         working-directory: ./reactliquestore
 
     steps:
+    - run: cd ./reactliquestore
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
