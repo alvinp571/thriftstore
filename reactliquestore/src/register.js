@@ -17,7 +17,8 @@ import {
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./register.css";
-import logoShow from "./assets/EyeOpen.svg"
+import logoShow from "./assets/EyeClose.svg"
+import logoHide from "./assets/EyeOpen.svg"
 
 const containerStyle = {
   backgroundColor: "black",
@@ -349,7 +350,7 @@ function RegisterPage() {
           </Grid>
           <Grid item xs={2} class="noPad">
           <div class="show" id="show" onClick={handleClickShowPassword}><img src={logoShow}/></div>
-          <div class="hide" id="hide" onClick={handleClickHidePassword}>Ic</div>
+          <div class="hide" id="hide" onClick={handleClickHidePassword}><img src={logoHide}/></div>
           </Grid>
           <Grid item xs={12}>
             <Button style={btnRegister} fullWidth onClick={handleSubmit}>
