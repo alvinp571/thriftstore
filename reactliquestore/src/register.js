@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import { Alert, Box, Grid } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { DatePicker, DesktopDatePicker } from "@mui/x-date-pickers";
 
 const containerStyle = {
   backgroundColor: "black",
@@ -278,6 +279,8 @@ function RegisterPage() {
               fullWidth
               onChange={(e) => setBirthdate(e.target.value)}
             />
+            <DesktopDatePicker
+            sx={textfieldStyle}/>
           </Grid>
           {/* <Grid item xs={12}>
             <TextField
