@@ -8,12 +8,15 @@ import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
+import com.liquestore.dto.employee.UpdateEmployeeAttendanceRequest;
+import com.liquestore.dto.employee.UpdateEmployeeAttendanceSchema;
 import com.liquestore.dto.employee.UpdateEmployeeRequest;
 import com.liquestore.dto.employee.UpdateEmployeeSchema;
 import com.liquestore.mapper.CreateEmployeeSchemaMapper;
 import com.liquestore.mapper.GetEmployeeListSchemaMapper;
 import com.liquestore.mapper.GetEmployeeSchemaMapper;
 import com.liquestore.mapper.GetMonthlyPayslipSchemaMapper;
+import com.liquestore.mapper.UpdateEmployeeAttendanceSchemaMapper;
 import com.liquestore.mapper.UpdateEmployeeSchemaMapper;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.AccessRightModel;
@@ -56,6 +59,7 @@ public class EmployeeService {
     private final GetEmployeeSchemaMapper getEmployeeSchemaMapper;
     private final GetMonthlyPayslipSchemaMapper getMonthlyPayslipResponseMapper;
     private final UpdateEmployeeSchemaMapper updateEmployeeSchemaMapper;
+    private final UpdateEmployeeAttendanceSchemaMapper updateEmployeeAttendanceSchemaMapper;
 
     public CreateEmployeeSchema createEmployee(CreateEmployeeRequest newEmployee) {
         LocalDate birthDate = LocalDate.parse(newEmployee.getBirthDate());
@@ -131,6 +135,33 @@ public class EmployeeService {
         EmployeePayDetail updatedPayDetail = updatePayDetail(id, updateEmployeeRequest.getPayDetail());
 
         return updateEmployeeSchemaMapper.map(id, updatedPayDetail);
+    }
+
+    public UpdateEmployeeAttendanceSchema updateEmployeeAttendance(int employeeId,
+            UpdateEmployeeAttendanceRequest requestBody) {
+        LocalDate attendanceDate = LocalDate.parse(requestBody.getDate());
+        AbsensiModel attendance = absensiRepository.findByTodaydate(Date.valueOf(attendanceDate))
+                .orElse(AbsensiModel.builder()
+                        .employeeid(employeeId)
+                        .todaydate(Date.valueOf(attendanceDate))
+                        .build());
+
+        AttendanceStatus attendanceStatus = AttendanceStatus.valueOf(requestBody.getAttendanceStatus());
+        if (AttendanceStatus.ABSENT.equals(attendanceStatus)) {
+            absensiRepository.delete(attendance);
+
+            return updateEmployeeAttendanceSchemaMapper.map(employeeId, attendanceDate, AttendanceStatus.ABSENT);
+        }
+
+        LocalTime clockIn = LocalTime.parse(requestBody.getClockIn());
+        attendance.setClockin(Timestamp.valueOf(attendanceDate.atTime(clockIn)));
+
+        LocalTime clockOut = LocalTime.parse(requestBody.getClockOut());
+        attendance.setClockout(Timestamp.valueOf(attendanceDate.atTime(clockOut)));
+
+        AbsensiModel savedAttendance = absensiRepository.save(attendance);
+
+        return updateEmployeeAttendanceSchemaMapper.map(savedAttendance);
     }
 
     private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee,

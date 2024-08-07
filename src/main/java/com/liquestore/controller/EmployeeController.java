@@ -5,6 +5,8 @@ import com.liquestore.dto.employee.CreateEmployeeSchema;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
+import com.liquestore.dto.employee.UpdateEmployeeAttendanceRequest;
+import com.liquestore.dto.employee.UpdateEmployeeAttendanceSchema;
 import com.liquestore.dto.employee.UpdateEmployeeRequest;
 import com.liquestore.dto.employee.UpdateEmployeeSchema;
 import com.liquestore.service.EmployeeService;
@@ -60,6 +62,15 @@ public class EmployeeController {
             @RequestParam("month") int month,
             @RequestParam("year") int year) {
         GetMonthlyPayslipSchema outputSchema = employeeService.getPayslip(employeeId, month, year);
+
+        return ResponseEntity.ok(outputSchema);
+    }
+
+    @PutMapping("/{id}/attendance")
+    public ResponseEntity<UpdateEmployeeAttendanceSchema> updateAttendance(
+            @PathVariable("id") int employeeId,
+            @RequestBody UpdateEmployeeAttendanceRequest requestBody) {
+        UpdateEmployeeAttendanceSchema outputSchema = employeeService.updateEmployeeAttendance(employeeId, requestBody);
 
         return ResponseEntity.ok(outputSchema);
     }
