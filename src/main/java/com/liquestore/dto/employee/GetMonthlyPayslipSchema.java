@@ -29,7 +29,7 @@ public class GetMonthlyPayslipSchema {
         private BigInteger basePay;
         private BigInteger foodAllowance;
         private BigInteger overtimePay;
-        private BigInteger holidayPay;
+        private BigInteger offPay;
         private BigInteger lateDeduction;
         private String attendanceStatus;
         private BigInteger netPay;

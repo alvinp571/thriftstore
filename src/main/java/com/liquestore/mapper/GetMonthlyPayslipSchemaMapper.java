@@ -13,8 +13,7 @@ import java.util.List;
 
 @Service
 public class GetMonthlyPayslipSchemaMapper {
-    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm");
+    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     public GetMonthlyPayslipSchema map(List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList,
             MonthlyPayCalculation monthlyPayCalculation) {
@@ -29,8 +28,7 @@ public class GetMonthlyPayslipSchemaMapper {
 
     public GetMonthlyPayslipSchema.DailyPayslip mapDailyPayDetail(AbsensiModel attendance,
             DailyPayCalculation dailyPayCalculation, AttendanceStatus attendanceStatus) {
-        String date = DATE_FORMAT.format(
-                LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault()));
+        String date = LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault()).toString();
         String clockIn = TIME_FORMAT.format(attendance.getClockin().toLocalDateTime().toLocalTime());
         String clockOut = TIME_FORMAT.format(attendance.getClockout().toLocalDateTime().toLocalTime());
 
@@ -42,7 +40,7 @@ public class GetMonthlyPayslipSchemaMapper {
                 .basePay(dailyPayCalculation.getGrossPay())
                 .foodAllowance(dailyPayCalculation.getFoodAllowance())
                 .overtimePay(dailyPayCalculation.getOvertimePay())
-                .holidayPay(dailyPayCalculation.getHolidayPay())
+                .offPay(dailyPayCalculation.getOffPay())
                 .lateDeduction(dailyPayCalculation.getLateDeduction())
                 .attendanceStatus(attendanceStatus.name())
                 .netPay(dailyPayCalculation.getNetPay())
@@ -51,7 +49,7 @@ public class GetMonthlyPayslipSchemaMapper {
 
     public GetMonthlyPayslipSchema.DailyPayslip mapDailyPayDetail(LocalDate date, AttendanceStatus attendanceStatus) {
         return GetMonthlyPayslipSchema.DailyPayslip.builder()
-                .date(DATE_FORMAT.format(date))
+                .date(date.toString())
                 .attendanceStatus(attendanceStatus.name())
                 .build();
     }

@@ -4,6 +4,7 @@ import com.liquestore.constants.AttendanceStatus;
 import com.liquestore.dto.employee.UpdateEmployeeAttendanceSchema;
 import com.liquestore.model.AbsensiModel;
 import org.springframework.stereotype.Service;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -19,7 +20,7 @@ public class UpdateEmployeeAttendanceSchemaMapper {
     }
 
     public UpdateEmployeeAttendanceSchema map(AbsensiModel attendance) {
-        LocalDate date = LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault());
+        LocalDate date = LocalDate.ofInstant(Instant.ofEpochMilli(attendance.getTodaydate().getTime()), ZoneId.systemDefault());
 
         LocalTime clockIn = LocalTime.from(attendance.getClockin().toLocalDateTime().toLocalTime());
         LocalTime clockOut = LocalTime.from(attendance.getClockout().toLocalDateTime().toLocalTime());

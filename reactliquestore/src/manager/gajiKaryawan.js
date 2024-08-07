@@ -36,6 +36,7 @@ import SupervisorSidebar from './sidebar';
 import {AccountCircle, ChevronLeft, ChevronRight} from '@mui/icons-material';
 import {addMonths, subMonths} from 'date-fns';
 import {useAuth} from '../authContext';
+import EditIcon from "@mui/icons-material/Edit";
 
 const RootContainer = styled.div`
     display: flex;
@@ -55,6 +56,21 @@ const styleModal = {
   boxShadow: 24,
   p: 4,
   textAlign: 'center'
+};
+
+const styleModalBesar = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 700,
+  maxHeight: '80vh',
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  borderRadius: 5,
+  p: 4,
+  overflowY: 'auto'
 };
 
 const headCells = [
@@ -181,6 +197,8 @@ const formatCurrency = (number) => {
 };
 
 export default function GajiKaryawan() {
+  const drawerWidth = 300;
+
   const {auth, logout} = useAuth();
   const getUsername = auth.user ? auth.user.username : '';
   const [order, setOrder] = useState('asc');
@@ -197,6 +215,13 @@ export default function GajiKaryawan() {
   const [offDay, setOffDay] = useState('');
   const [payslip, setPayslip] = useState({});
 
+  // Update employee attendance form values
+  const [editAttendanceOpen, setEditAttendanceOpen] = useState(false);
+  const [attendanceDate, setAttendanceDate] = useState("");
+  const [attendanceClockIn, setAttendanceClockIn] = useState("");
+  const [attendanceClockOut, setAttendanceClockOut] = useState("");
+  const [attendanceStatus, setAttendanceStatus] = useState("");
+
   const months = [
     'Januari', 'Februari', 'Maret', 'April',
     'Mei', 'Juni', 'Juli', 'Agustus',
@@ -204,9 +229,6 @@ export default function GajiKaryawan() {
   ];
   const currentMonthName = months[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
-
-
-  const drawerWidth = 300;
 
   // Log out handlers
   const handleLogout = () => {
@@ -248,6 +270,34 @@ export default function GajiKaryawan() {
     setCurrentDate(addMonths(currentDate, 1));
   };
 
+  // Edit employee attendance handlers
+  const handleOpenEditEmployeeAttendance = (payDetail) => {
+    setAttendanceDate(payDetail.date);
+    setAttendanceClockIn(payDetail.clockIn);
+    setAttendanceClockOut(payDetail.clockOut);
+    setAttendanceStatus((payDetail.attendanceStatus))
+    setEditAttendanceOpen(true);
+  }
+
+  const fetchPayslip = async (employeeId, month, year) => axios.get(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}/monthly-payslip?month=${month}&year=${year}`);
+
+  const handleUpdateEmployeeAttendance = async () => {
+    const response = await axios.put(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}/attendance`, {
+      "date": attendanceDate,
+      "clockIn": attendanceClockIn,
+      "clockOut": attendanceClockOut,
+      "attendanceStatus": attendanceStatus
+    })
+      .then(res => res.data);
+
+    const month = currentDate.getMonth() + 1;
+    const year = currentDate.getFullYear();
+
+    fetchPayslip(currentEmployee.id, month, year)
+      .then(res => setPayslip(res.data))
+    setEditAttendanceOpen(false)
+  }
+
   // Update page data when selected employee or data change
   useEffect(() => {
     if (!currentEmployee || !currentEmployee.id) return;
@@ -271,11 +321,11 @@ export default function GajiKaryawan() {
     const fetchData = async () => {
       const url = `${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/${currentEmployee.id}`;
       const data = await axios.get(url).then(res => res.data);
-      
+
       setScheduledClockIn(data.scheduledClockIn);
       setOffDay(data.offDay);
     }
-    
+
     fetchData();
   }, [currentEmployee]);
 
@@ -411,16 +461,25 @@ export default function GajiKaryawan() {
                       return (
                         <TableRow hover tabIndex={-1} sx={{cursor: 'pointer'}}>
                           <TableCell align="center">{pd?.date}</TableCell>
-                          <TableCell align="center">{pd?.clockIn || 0}</TableCell>
-                          <TableCell align="center">{pd?.clockOut || 0}</TableCell>
+                          <TableCell align="center">{pd?.clockIn || "00:00"}</TableCell>
+                          <TableCell align="center">{pd?.clockOut || "00:00"}</TableCell>
                           <TableCell align="center">{pd?.hoursWorked || 0}</TableCell>
                           <TableCell align="center">{formatCurrency(pd?.basePay)}</TableCell>
                           <TableCell align="center">{formatCurrency(pd?.foodAllowance)}</TableCell>
                           <TableCell align="center">{formatCurrency(pd?.overtimePay)}</TableCell>
                           <TableCell align="center">{formatCurrency(pd?.offPay)}</TableCell>
-                          <TableCell align="center">{formatCurrency(pd?.absentCount)}</TableCell>
+                          <TableCell align="center">{formatCurrency(pd?.lateDeduction)}</TableCell>
                           <TableCell align="center">{pd?.attendanceStatus}</TableCell>
                           <TableCell align="center">{formatCurrency(pd?.netPay)}</TableCell>
+
+                          {/* Edit employee button */}
+                          <TableCell sx={{display: 'flex'}}>
+                            <Tooltip title="edit">
+                              <IconButton onClick={() => handleOpenEditEmployeeAttendance(pd)}>
+                                <EditIcon/>
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -443,33 +502,100 @@ export default function GajiKaryawan() {
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Gaji Kotor</TableCell>
                   <TableCell align="center"></TableCell>
-                  <TableCell align="center">{formatCurrency(payslip.monthlyPayGross)}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip?.monthlyPayGross)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Absen</TableCell>
-                  <TableCell align="center">{payslip.absentCount}</TableCell>
-                  <TableCell align="center">{formatCurrency(payslip.absentDeduction)}</TableCell>
+                  <TableCell align="center">{payslip?.absentCount}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip?.absentDeduction)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Terlambat</TableCell>
-                  <TableCell align="center">{payslip.lateCount}</TableCell>
-                  <TableCell align="center">{formatCurrency(payslip.lateDeduction)}</TableCell>
+                  <TableCell align="center">{payslip?.lateCount}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip?.lateDeduction)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Potongan</TableCell>
                   <TableCell align="center"></TableCell>
-                  <TableCell align="center">{formatCurrency(payslip.netDeduction)}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip?.netDeduction)}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{display: "grid", gridTemplateColumns: "auto 5% 20%", gridTemplateRows: "repeat(3, auto)"}}>
                   <TableCell align="right">Total Gaji</TableCell>
                   <TableCell align="center"></TableCell>
-                  <TableCell align="center">{formatCurrency(payslip.monthlyPayNet)}</TableCell>
+                  <TableCell align="center">{formatCurrency(payslip?.monthlyPayNet)}</TableCell>
                 </TableRow>
               </Table>
+
+              {/* ini modal edit data karyawan */}
+              <Modal
+                aria-labelledby="spring-modal-title"
+                aria-describedby="spring-modal-description"
+                open={editAttendanceOpen}
+                onClose={() => setEditAttendanceOpen(false)}
+                closeAfterTransition
+                slots={{backdrop: Backdrop}}
+                slotProps={{
+                  backdrop: {
+                    TransitionComponent: Fade,
+                  },
+                }}
+              >
+                <Fade in={editAttendanceOpen}>
+                  <Box sx={styleModalBesar}>
+                    <form>
+                      <Grid container spacing={3}>
+                        {/* Full Name */}
+                        <Grid item xs={12}>
+                          <Typography variant={"h5"}>{attendanceDate}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"time"}
+                            label={"Clock In"}
+                            value={attendanceClockIn}
+                            onChange={e => setAttendanceClockIn(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"time"}
+                            label={"Clock Out"}
+                            value={attendanceClockOut}
+                            onChange={e => setAttendanceClockOut(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            required
+                            type={"text"}
+                            label={"Keterangan"}
+                            value={attendanceStatus}
+                            onChange={e => setAttendanceStatus(e.target.value)}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Button
+                            variant="contained"
+                            onClick={handleUpdateEmployeeAttendance}
+                            fullWidth
+                            style={{backgroundColor: 'black', color: 'white'}}>
+                            Update
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </form>
+                  </Box>
+                </Fade>
+              </Modal>
             </Paper>
           </Box>
         </RootContainer>

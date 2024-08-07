@@ -12,7 +12,7 @@ public class DailyPayCalculation {
     private BigInteger grossPay;
     private BigInteger foodAllowance;
     private BigInteger overtimePay;
-    private BigInteger holidayPay;
+    private BigInteger offPay;
     private BigInteger lateDeduction;
     private BigInteger netPay;
 }

@@ -153,6 +153,9 @@ public class EmployeeService {
             return updateEmployeeAttendanceSchemaMapper.map(employeeId, attendanceDate, AttendanceStatus.ABSENT);
         }
 
+        LocalDate date = LocalDate.parse(requestBody.getDate());
+        attendance.setTodaydate(Date.valueOf(date));
+
         LocalTime clockIn = LocalTime.parse(requestBody.getClockIn());
         attendance.setClockin(Timestamp.valueOf(attendanceDate.atTime(clockIn)));
 
@@ -241,7 +244,7 @@ public class EmployeeService {
                 .grossPay(grossPay)
                 .foodAllowance(employeePayDetail.getFoodAllowance())
                 .overtimePay(overtimePay)
-                .holidayPay(holidayPay)
+                .offPay(holidayPay)
                 .lateDeduction(lateDeduction)
                 .netPay(netPay)
                 .build();
