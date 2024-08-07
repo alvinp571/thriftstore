@@ -255,7 +255,7 @@ export default function DataKaryawan() {
 
   const fetchDataKaryawan = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/manager/dataKaryawan');
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/manager/dataKaryawan`);
       console.log(response.data);
       // if (response.data.status !== "inactive") {
       //   setRows(response.data);
@@ -268,7 +268,7 @@ export default function DataKaryawan() {
 
   const fetchDataRoles = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/manager/getRolesKaryawan');
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/manager/getRolesKaryawan`);
       console.log(response.data);
       setRolesKaryawan(response.data);
     } catch (error) {
@@ -374,7 +374,7 @@ export default function DataKaryawan() {
     fetchDataRoles();
     setOpenEdit(true);
     try {
-      const response = await axios.get(`http://localhost:8080/manager/getEditDataKaryawan?idEmployee=${id}`);
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/manager/getEditDataKaryawan?idEmployee=${id}`);
       console.log(response.data);
       setId(response.data.id);
       setFullname(response.data.fullname);
@@ -411,7 +411,7 @@ export default function DataKaryawan() {
       console.log(jam_masuk);
       console.log(jadwal_libur);
       try {
-        const response = await axios.post('http://localhost:8080/manager/editKaryawan', { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur, status, id });
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/manager/editKaryawan`, { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur, status, id });
         console.log(response.data);
         setShowSuccessUpdate(true);
         setMessageUpdate("Berhasil Ubah Data Karyawan");
@@ -435,7 +435,7 @@ export default function DataKaryawan() {
 
   const handleConfirmDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:8080/manager/deleteKaryawan/${id}`);
+      const response = await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/manager/deleteKaryawan/${id}`);
       console.log('Employee deleted:', response.data);
       setShowSuccessDelete(true);
       setMessageDelete("Berhasil Hapus Karyawan");
@@ -459,7 +459,7 @@ export default function DataKaryawan() {
     if (validate()) {
       const jam_masuk = `${entryhour}:00`;
       try {
-        const response = await axios.post('http://localhost:8080/manager/tambahKaryawan', { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur });
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/manager/tambahKaryawan`, { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur });
         console.log(response.data);
         setShowSuccessInsert(true);
         setMessageInsert("Berhasil Tambah Karyawan");
