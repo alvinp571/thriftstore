@@ -7,18 +7,20 @@ import com.liquestore.dto.Response;
 import com.liquestore.model.AbsensiModel;
 import com.liquestore.model.AccessRightModel;
 import com.liquestore.model.EmployeeModel;
+import com.liquestore.model.EmployeePayDetail;
 import com.liquestore.model.ItemModel;
 import com.liquestore.model.OrdersModel;
 import com.liquestore.model.TypeModel;
 import com.liquestore.repository.AbsensiRepository;
 import com.liquestore.repository.AccessRightRepository;
+import com.liquestore.repository.EmployeePayDetailRepository;
 import com.liquestore.repository.EmployeeRepository;
 import com.liquestore.repository.ItemRepository;
 import com.liquestore.repository.OrdersRepository;
 import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.LoginService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,9 +52,10 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/backend/manager")
-@CrossOrigin
+@RequiredArgsConstructor
 public class ManagerController {
     private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
     boolean cekPasscode = false;
@@ -61,24 +64,18 @@ public class ManagerController {
     boolean cekTanggal = false;
     int idxAbsensi = 0;
 
-    @Autowired
-    private LoginService loginService;
-    @Autowired
-    private EmployeeRepository employeeRepository;
-    @Autowired
-    private AbsensiRepository absensiRepository;
-    @Autowired
-    private AccessRightRepository accessRightRepository;
-    @Autowired
-    private OrdersRepository ordersRepository;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private TypeRepository typeRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private FileStorageService fileStorageService;
+    private final LoginService loginService;
+    private final FileStorageService fileStorageService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final EmployeeRepository employeeRepository;
+    private final EmployeePayDetailRepository employeePayDetailRepository;
+    private final AbsensiRepository absensiRepository;
+    private final AccessRightRepository accessRightRepository;
+    private final OrdersRepository ordersRepository;
+    private final ItemRepository itemRepository;
+    private final TypeRepository typeRepository;
 
     @PostMapping("/clockin")
     public ResponseEntity<?> clockin(@RequestBody String passcode) throws JsonProcessingException {
@@ -302,9 +299,14 @@ public class ManagerController {
         addEmployee.setPassword(passwordEncoder.encode("123"));
         addEmployee.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
         addEmployee.setStatus("active");
-        employeeRepository.save(addEmployee);
-        logger.info(String.valueOf(addEmployee));
-        return ResponseEntity.ok(addEmployee);
+        EmployeeModel createdEmployee = employeeRepository.save(addEmployee);
+
+        EmployeePayDetail employeePayDetail = EmployeePayDetail.builder()
+                .employeeId(createdEmployee.getId())
+                .build();
+        employeePayDetailRepository.save(employeePayDetail);
+
+        return ResponseEntity.ok(createdEmployee);
     }
 
     @GetMapping("/getRolesKaryawan")
