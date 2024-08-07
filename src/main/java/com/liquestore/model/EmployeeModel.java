@@ -7,13 +7,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "employee")
 public class EmployeeModel {
@@ -41,9 +47,6 @@ public class EmployeeModel {
     @ManyToOne
     @JoinColumn(name = "accessrightid", referencedColumnName = "id")
     private AccessRightModel accessRight;
-
-    public EmployeeModel() {
-    }
 
     public EmployeeModel(int id) {
         this.id = id;

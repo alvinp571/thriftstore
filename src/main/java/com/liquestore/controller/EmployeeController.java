@@ -1,5 +1,7 @@
 package com.liquestore.controller;
 
+import com.liquestore.dto.employee.CreateEmployeeRequest;
+import com.liquestore.dto.employee.CreateEmployeeSchema;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class EmployeeController {
     private final EmployeeService employeeService;
+
+    @PostMapping
+    public ResponseEntity<CreateEmployeeSchema> createEmployee(@RequestBody CreateEmployeeRequest requestBody) {
+        CreateEmployeeSchema outputSchema = employeeService.createEmployee(requestBody);
+
+        return ResponseEntity.ok(outputSchema);
+    }
 
     @GetMapping
     public ResponseEntity<GetEmployeeListSchema> getEmployeeList() {

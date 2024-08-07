@@ -1,6 +1,8 @@
 package com.liquestore.service;
 
 import com.liquestore.constants.AttendanceStatus;
+import com.liquestore.dto.employee.CreateEmployeeRequest;
+import com.liquestore.dto.employee.CreateEmployeeSchema;
 import com.liquestore.dto.employee.DailyPayCalculation;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
@@ -8,11 +10,13 @@ import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
 import com.liquestore.dto.employee.MonthlyPayCalculation;
 import com.liquestore.dto.employee.UpdateEmployeeRequest;
 import com.liquestore.dto.employee.UpdateEmployeeSchema;
+import com.liquestore.mapper.CreateEmployeeSchemaMapper;
 import com.liquestore.mapper.GetEmployeeListSchemaMapper;
 import com.liquestore.mapper.GetEmployeeSchemaMapper;
 import com.liquestore.mapper.GetPayDetailSchemaMapper;
 import com.liquestore.mapper.UpdateEmployeeSchemaMapper;
 import com.liquestore.model.AbsensiModel;
+import com.liquestore.model.AccessRightModel;
 import com.liquestore.model.EmployeeModel;
 import com.liquestore.model.EmployeePayDetail;
 import com.liquestore.repository.AbsensiRepository;
@@ -21,11 +25,14 @@ import com.liquestore.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -42,10 +49,41 @@ public class EmployeeService {
     private final EmployeePayDetailRepository employeePayDetailRepository;
     private final AbsensiRepository absensiRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
+    private final CreateEmployeeSchemaMapper createEmployeeSchemaMapper;
     private final GetEmployeeListSchemaMapper getEmployeeListSchemaMapper;
     private final GetEmployeeSchemaMapper getEmployeeSchemaMapper;
     private final GetPayDetailSchemaMapper getPayDetailResponseMapper;
     private final UpdateEmployeeSchemaMapper updateEmployeeSchemaMapper;
+
+    public CreateEmployeeSchema createEmployee(CreateEmployeeRequest newEmployee) {
+        LocalDate birthDate = LocalDate.parse(newEmployee.getBirthDate());
+        String encodedPassword = passwordEncoder.encode(newEmployee.getPassword());
+        Timestamp createdTimestamp = Timestamp.from(Instant.now());
+
+        EmployeeModel employee = EmployeeModel.builder()
+                .username(newEmployee.getUserName())
+                .fullname(newEmployee.getFullName())
+                .email(newEmployee.getEmail())
+                .birthdate(Date.valueOf(birthDate))
+                .password(encodedPassword)
+                .phonenumber(newEmployee.getPhoneNumber())
+                .firstjoindate(createdTimestamp)
+                .lastupdate(createdTimestamp)
+                .accessRight(AccessRightModel.builder()
+                        .id(newEmployee.getAccessRightId())
+                        .build())
+                .build();
+        EmployeeModel createdEmployee = employeeRepository.save(employee);
+
+        EmployeePayDetail employeePayDetail = EmployeePayDetail.builder()
+                .employeeId(createdEmployee.getId())
+                .build();
+        employeePayDetailRepository.save(employeePayDetail);
+
+        return createEmployeeSchemaMapper.map(employee);
+    }
 
     public GetEmployeeListSchema getEmployeeList() {
         List<GetEmployeeListSchema.Employee> employeeList = employeeRepository.findAll(Sort.by("fullname")).stream()
