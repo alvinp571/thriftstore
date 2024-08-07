@@ -18,8 +18,8 @@ public class EmployeePayDetail {
 
     private int employeeId;
     private int workingHours;
-    private BigInteger payPerHour;
     private int paidOffDay;
-    private int overtimePay;
-    private int foodAllowance;
+    private BigInteger payPerHour;
+    private BigInteger overtimePay;
+    private BigInteger foodAllowance;
 }

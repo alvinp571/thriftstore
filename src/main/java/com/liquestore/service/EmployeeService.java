@@ -75,13 +75,15 @@ public class EmployeeService {
         EmployeeModel employee = employeeRepository.findById(employeeId)
                 .orElseThrow(RuntimeException::new);
 
+        EmployeePayDetail employeePayDetail = employeePayDetailRepository.findByEmployeeId(employeeId)
+                .orElseThrow(RuntimeException::new);
+
         Date startDate = Date.valueOf(LocalDate.of(year, month, 1));
         Date endDate = Date.valueOf(LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth()));
-        var attendanceList =
-                absensiRepository.findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(employeeId, startDate,
-                        endDate);
+        var attendanceList = absensiRepository.findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(employeeId,
+                startDate, endDate);
 
-        var dailyPayslip = buildDailyPayslipList(employee, month, year, attendanceList);
+        var dailyPayslip = buildDailyPayslipList(employee, employeePayDetail, month, year, attendanceList);
         var monthlyPayCalculation = calculateMonthlyPay(dailyPayslip);
 
         return getPayDetailResponseMapper.map(dailyPayslip, monthlyPayCalculation);
@@ -93,9 +95,8 @@ public class EmployeeService {
         return updateEmployeeSchemaMapper.map(id, updatedPayDetail);
     }
 
-    private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee, int month,
-            int year,
-            List<AbsensiModel> attendanceList) {
+    private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee,
+            EmployeePayDetail employeePayDetail, int month, int year, List<AbsensiModel> attendanceList) {
         List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList = new ArrayList<>();
 
         YearMonth yearMonth = YearMonth.of(year, month);
@@ -112,7 +113,7 @@ public class EmployeeService {
                     .getDayOfMonth();
 
             if (day == attendanceDay) {
-                DailyPayCalculation dailyPayCalculation = calculateDailyPay(employee, attendance);
+                DailyPayCalculation dailyPayCalculation = calculateDailyPay(employee, employeePayDetail, attendance);
                 var dailyPayDetail = getPayDetailResponseMapper.mapDailyPayDetail(attendance, dailyPayCalculation,
                         AttendanceStatus.PRESENT);
                 dailyPayslipList.add(dailyPayDetail);
@@ -136,7 +137,8 @@ public class EmployeeService {
         return dailyPayslipList;
     }
 
-    private DailyPayCalculation calculateDailyPay(EmployeeModel employee, AbsensiModel attendance) {
+    private DailyPayCalculation calculateDailyPay(EmployeeModel employee, EmployeePayDetail employeePayDetail,
+            AbsensiModel attendance) {
         LocalDate date = LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault());
         int dayOfWeek = date.getDayOfWeek().getValue();
 
@@ -145,18 +147,18 @@ public class EmployeeService {
         BigDecimal hoursWorked = BigDecimal.valueOf(clockOut.toSecondOfDay())
                 .min(BigDecimal.valueOf(clockIn.toSecondOfDay()))
                 .divide(BigDecimal.valueOf(3600), RoundingMode.HALF_UP);
-        BigDecimal workHours = new BigDecimal(employee.getWorkingHours());
+        BigDecimal workHours = new BigDecimal(employeePayDetail.getWorkingHours());
         BigDecimal overtimeHours = (hoursWorked.compareTo(workHours) > 0)
                 ? hoursWorked.min(workHours)
                 : BigDecimal.ZERO;
 
-        BigInteger grossPay = new BigDecimal(employee.getPayPerHour())
+        BigInteger grossPay = new BigDecimal(employeePayDetail.getPayPerHour())
                 .multiply(workHours)
                 .toBigInteger();
-        BigInteger overtimePay = new BigDecimal(employee.getOvertimePay())
+        BigInteger overtimePay = new BigDecimal(employeePayDetail.getOvertimePay())
                 .multiply(overtimeHours)
                 .toBigInteger();
-        BigInteger holidayPay = (dayOfWeek == employee.getOffDay() && employee.getHolidayPay() == 1)
+        BigInteger holidayPay = (dayOfWeek == employee.getOffDay() && employeePayDetail.getPaidOffDay() == 1)
                 ? grossPay
                 : BigInteger.ZERO;
         BigInteger lateDeduction = BigInteger.ZERO;
@@ -168,7 +170,7 @@ public class EmployeeService {
         return DailyPayCalculation.builder()
                 .hoursWorked(hoursWorked)
                 .grossPay(grossPay)
-                .foodAllowance(employee.getFoodAllowance())
+                .foodAllowance(employeePayDetail.getFoodAllowance())
                 .overtimePay(overtimePay)
                 .holidayPay(holidayPay)
                 .lateDeduction(lateDeduction)

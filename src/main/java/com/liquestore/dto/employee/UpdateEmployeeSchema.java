@@ -15,9 +15,9 @@ public class UpdateEmployeeSchema {
     @Builder
     public static class PayDetail {
         private Integer workingHours;
-        private BigInteger payPerHour;
         private Boolean paidOffDay;
-        private Integer overtimePay;
-        private Integer foodAllowance;
+        private BigInteger payPerHour;
+        private BigInteger overtimePay;
+        private BigInteger foodAllowance;
     }
 }
