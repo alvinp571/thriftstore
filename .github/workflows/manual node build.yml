@@ -32,7 +32,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./reactliquestore
+        working-directory: reactliquestore
 
     steps:
     - run: cd ./reactliquestore
