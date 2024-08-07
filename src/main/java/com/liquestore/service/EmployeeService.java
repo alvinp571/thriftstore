@@ -4,6 +4,7 @@ import com.liquestore.constants.AttendanceStatus;
 import com.liquestore.dto.employee.CreateEmployeeRequest;
 import com.liquestore.dto.employee.CreateEmployeeSchema;
 import com.liquestore.dto.employee.DailyPayCalculation;
+import com.liquestore.dto.employee.GetAttendanceStatusList;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
@@ -146,7 +147,7 @@ public class EmployeeService {
                         .todaydate(Date.valueOf(attendanceDate))
                         .build());
 
-        AttendanceStatus attendanceStatus = AttendanceStatus.valueOf(requestBody.getAttendanceStatus());
+        AttendanceStatus attendanceStatus = AttendanceStatus.valueOfLabelId(requestBody.getAttendanceStatus());
         if (AttendanceStatus.ABSENT.equals(attendanceStatus)) {
             absensiRepository.delete(attendance);
 
@@ -165,6 +166,16 @@ public class EmployeeService {
         AbsensiModel savedAttendance = absensiRepository.save(attendance);
 
         return updateEmployeeAttendanceSchemaMapper.map(savedAttendance);
+    }
+
+    public GetAttendanceStatusList getAttendanceStatusList() {
+        List<String> attendanceStatusList = List.of(
+                AttendanceStatus.ABSENT.getLabelId(),
+                AttendanceStatus.PRESENT.getLabelId());
+
+        return GetAttendanceStatusList.builder()
+                .attendanceStatusList(attendanceStatusList)
+                .build();
     }
 
     private List<GetMonthlyPayslipSchema.DailyPayslip> buildDailyPayslipList(EmployeeModel employee,

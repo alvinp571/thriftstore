@@ -2,6 +2,7 @@ package com.liquestore.controller;
 
 import com.liquestore.dto.employee.CreateEmployeeRequest;
 import com.liquestore.dto.employee.CreateEmployeeSchema;
+import com.liquestore.dto.employee.GetAttendanceStatusList;
 import com.liquestore.dto.employee.GetEmployeeListSchema;
 import com.liquestore.dto.employee.GetEmployeeSchema;
 import com.liquestore.dto.employee.GetMonthlyPayslipSchema;
@@ -71,6 +72,13 @@ public class EmployeeController {
             @PathVariable("id") int employeeId,
             @RequestBody UpdateEmployeeAttendanceRequest requestBody) {
         UpdateEmployeeAttendanceSchema outputSchema = employeeService.updateEmployeeAttendance(employeeId, requestBody);
+
+        return ResponseEntity.ok(outputSchema);
+    }
+
+    @GetMapping("/attendance-status")
+    public ResponseEntity<GetAttendanceStatusList> getAttendanceStatusList() {
+        GetAttendanceStatusList outputSchema = employeeService.getAttendanceStatusList();
 
         return ResponseEntity.ok(outputSchema);
     }

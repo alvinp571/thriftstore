@@ -221,6 +221,7 @@ export default function GajiKaryawan() {
   const [attendanceClockIn, setAttendanceClockIn] = useState("");
   const [attendanceClockOut, setAttendanceClockOut] = useState("");
   const [attendanceStatus, setAttendanceStatus] = useState("");
+  const [attendanceStatusOptions, setAttendanceStatusOptions] = useState([]);
 
   const months = [
     'Januari', 'Februari', 'Maret', 'April',
@@ -329,14 +330,24 @@ export default function GajiKaryawan() {
     fetchData();
   }, [currentEmployee]);
 
-  // Fetch employee list
+  // Fetch initial page data (employee list, attendance status list)
   useEffect(() => {
-    const fetchData = async () => await axios.get(process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE);
+    const fetchEmployeeList = async () => await axios.get(process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE);
+    const fetchAttendanceStatusList = async () => await axios.get(`${process.env.REACT_APP_ENDPOINTS_EMPLOYEES_SERVICE}/attendance-status`);
 
-    fetchData()
+    fetchEmployeeList()
       .then(res => {
         const employeeOptions = res.data.employeeList.map(e => ({"id": e.id, "label": e.fullName}));
         setEmployeeOptions(employeeOptions);
+      });
+
+    fetchAttendanceStatusList()
+      .then(res => {
+        const attendanceStatusOptions = res.data.attendanceStatusList.map(e => ({"id": e, "label": e}));
+
+        console.log(attendanceStatusOptions);
+
+        setAttendanceStatusOptions(attendanceStatusOptions);
       });
   }, []);
 
@@ -573,13 +584,11 @@ export default function GajiKaryawan() {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <TextField
+                          <Autocomplete
                             fullWidth
-                            required
-                            type={"text"}
-                            label={"Keterangan"}
-                            value={attendanceStatus}
-                            onChange={e => setAttendanceStatus(e.target.value)}
+                            options={!attendanceStatusOptions ? [{label: "Loading...", id: 0}] : attendanceStatusOptions}
+                            renderInput={(params) => <TextField {...params} label="Keterangan"/>}
+                            onChange={(e, value) => setAttendanceStatus(value.label)}
                           />
                         </Grid>
                         <Grid item xs={12}>
