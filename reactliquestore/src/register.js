@@ -4,9 +4,20 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
-import { Alert, Box, Grid } from "@mui/material";
+import {
+  Alert,
+  Box,
+  FormControl,
+  Grid,
+  IconButton,
+  Input,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
+} from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { DatePicker, DesktopDatePicker } from "@mui/x-date-pickers";
+import "./register.css";
+import logoShow from "./assets/EyeOpen.svg"
 
 const containerStyle = {
   backgroundColor: "black",
@@ -19,7 +30,7 @@ const textfieldStyle = {
   input: {
     color: "white",
     border: "1px solid white",
-    borderRadius: "10px",
+    borderRadius: "4px",
   },
   placeholder: {
     color: "lightgray",
@@ -54,6 +65,24 @@ function RegisterPage() {
   const params = new URLSearchParams(location.search);
   const orderidFromQuery = params.get("orderid");
   console.log(orderidFromQuery);
+
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword((show) => !show);
+    document.getElementById('show').style.display = 'none'
+    document.getElementById('hide').style.display = 'flex'
+  };
+
+  const handleClickHidePassword = () => {
+    setShowPassword((show) => !show);
+    document.getElementById('show').style.display = 'flex'
+    document.getElementById('hide').style.display = 'none'
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
 
   const validate = () => {
     let tempErrors = {};
@@ -260,7 +289,7 @@ function RegisterPage() {
             <TextField
               sx={textfieldStyle}
               type="text"
-              placeholder="Phonenumber"
+              placeholder="Phone number"
               value={phonenumber}
               helperText={errors.phonenumber}
               FormHelperTextProps={{ sx: { color: "red" } }}
@@ -279,8 +308,6 @@ function RegisterPage() {
               fullWidth
               onChange={(e) => setBirthdate(e.target.value)}
             />
-            <DesktopDatePicker
-            sx={textfieldStyle}/>
           </Grid>
           {/* <Grid item xs={12}>
             <TextField
@@ -294,8 +321,8 @@ function RegisterPage() {
               onChange={(e) => setUsernameIG(e.target.value)}
             />
           </Grid> */}
-          <Grid item xs={12}>
-            <TextField
+          <Grid item xs={10}>
+            {/* <TextField
               sx={textfieldStyle}
               placeholder="Password"
               type="password"
@@ -304,20 +331,26 @@ function RegisterPage() {
               FormHelperTextProps={{ sx: { color: "red" } }}
               fullWidth
               onChange={(e) => setPassword(e.target.value)}
-            />
-          </Grid>
-          {/* <Grid item xs={12}>
+            /> */}
+
             <TextField
               sx={textfieldStyle}
-              placeholder="Konfirmasi Password"
-              type="password"
-              value={konfirmasiPassword}
-              helperText={errors.konfirmasiPassword}
-              FormHelperTextProps={{ sx: { color: 'red' } }}
+              placeholder="Password"
+              type = {showPassword ? 'text' : 'password'}
+              // type="password"
+              value={password}
+              helperText={errors.password}
+              FormHelperTextProps={{ sx: { color: "red" } }}
               fullWidth
-              onChange={(e) => setKonfirmasiPassword(e.target.value)}
-            />
-          </Grid> */}
+              onChange={(e) => setPassword(e.target.value)}
+            >
+              <InputAdornment></InputAdornment>
+            </TextField>
+          </Grid>
+          <Grid item xs={2} class="noPad">
+          <div class="show" id="show" onClick={handleClickShowPassword}><img src={logoShow}/></div>
+          <div class="hide" id="hide" onClick={handleClickHidePassword}>Ic</div>
+          </Grid>
           <Grid item xs={12}>
             <Button style={btnRegister} fullWidth onClick={handleSubmit}>
               Register
@@ -325,6 +358,7 @@ function RegisterPage() {
           </Grid>
         </Grid>
       </Box>
+        
     </Container>
   );
 }

@@ -19,7 +19,7 @@ const textfieldStyle = {
   input: {
     color: "white",
     border: "1px solid white",
-    borderRadius: "10px",
+    borderRadius: "4px",
   },
   placeholder: {
     color: "lightgray",
