@@ -235,40 +235,69 @@ public class EmployeeService {
         LocalDate date = LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault());
         int dayOfWeek = date.getDayOfWeek().getValue();
 
+        LocalTime scheduledClockIn = employee.getJam_masuk().toLocalTime();
         LocalTime clockIn = attendance.getClockin().toLocalDateTime().toLocalTime();
-        LocalTime clockOut = attendance.getClockin().toLocalDateTime().toLocalTime();
+        LocalTime clockOut = attendance.getClockout().toLocalDateTime().toLocalTime();
         BigDecimal hoursWorked = BigDecimal.valueOf(clockOut.toSecondOfDay())
-                .min(BigDecimal.valueOf(clockIn.toSecondOfDay()))
+                .subtract(BigDecimal.valueOf(clockIn.toSecondOfDay()))
                 .divide(BigDecimal.valueOf(3600), RoundingMode.HALF_UP);
         BigDecimal workHours = new BigDecimal(employeePayDetail.getWorkingHours());
         BigDecimal overtimeHours = (hoursWorked.compareTo(workHours) > 0)
-                ? hoursWorked.min(workHours)
+                ? hoursWorked.subtract(workHours)
                 : BigDecimal.ZERO;
 
         BigInteger grossPay = new BigDecimal(employeePayDetail.getPayPerHour())
                 .multiply(workHours)
                 .toBigInteger();
+        BigInteger foodAllowance = (hoursWorked.compareTo(workHours) < 0) ?
+                BigInteger.ZERO
+                : employeePayDetail.getFoodAllowance();
         BigInteger overtimePay = new BigDecimal(employeePayDetail.getOvertimePay())
                 .multiply(overtimeHours)
                 .toBigInteger();
-        BigInteger holidayPay = (dayOfWeek == employee.getOffDay() && employeePayDetail.getPaidOffDay() == 1)
+        BigInteger offPay = (dayOfWeek == employee.getOffDay() && employeePayDetail.getPaidOffDay() == 1)
                 ? grossPay
                 : BigInteger.ZERO;
-        BigInteger lateDeduction = BigInteger.ZERO;
+        BigInteger lateDeduction = calculateLateDeduction(scheduledClockIn, clockIn);
         BigInteger netPay = grossPay
                 .add(overtimePay)
-                .add(holidayPay)
+                .add(offPay)
                 .subtract(lateDeduction);
+        netPay = (netPay.compareTo(BigInteger.ZERO) < 0)
+                ? BigInteger.ZERO
+                : netPay;
 
         return DailyPayCalculation.builder()
                 .hoursWorked(hoursWorked)
                 .grossPay(grossPay)
-                .foodAllowance(employeePayDetail.getFoodAllowance())
+                .foodAllowance(foodAllowance)
                 .overtimePay(overtimePay)
-                .offPay(holidayPay)
+                .offPay(offPay)
                 .lateDeduction(lateDeduction)
                 .netPay(netPay)
                 .build();
+    }
+
+    private BigInteger calculateLateDeduction(LocalTime scheduledClockIn, LocalTime clockIn) {
+        if (!clockIn.isAfter(scheduledClockIn)) {
+            return BigInteger.ZERO;
+        }
+
+        int secondsLate = clockIn.toSecondOfDay() - scheduledClockIn.toSecondOfDay();
+        int minutesLate = secondsLate / 60;
+        if (1 <= minutesLate && minutesLate < 5) {
+            return BigInteger.valueOf(10000L);
+        }
+        else if (5 <= minutesLate && minutesLate < 15) {
+            return BigInteger.valueOf(15000L);
+        }
+        else if (15 <= minutesLate && minutesLate < 30) {
+            return BigInteger.valueOf(20000L);
+        }
+
+        int hoursLate = minutesLate / 60 + 1;
+        return BigInteger.valueOf(30000L)
+                .multiply(BigInteger.valueOf(hoursLate));
     }
 
     private AttendanceStatus mapAttendanceStatus(EmployeeModel employee, EmployeePayDetail employeePayDetail,
@@ -280,7 +309,7 @@ public class EmployeeService {
         }
 
         BigDecimal workHours = new BigDecimal(employeePayDetail.getWorkingHours());
-        if (dailyPayCalculation.getHoursWorked().compareTo(workHours) < 0) {
+        if (dailyPayCalculation.getHoursWorked().compareTo(workHours) <= 0) {
             return AttendanceStatus.UNDER_WORK_HOURS;
         }
 
@@ -306,14 +335,23 @@ public class EmployeeService {
                 .filter(pd -> AttendanceStatus.LATE
                         .equals(AttendanceStatus.valueOfLabelId(pd.getAttendanceStatus())))
                 .count();
+        BigInteger lateDeduction = dailyPayslipList.stream()
+                .map(GetMonthlyPayslipSchema.DailyPayslip::getLateDeduction)
+                .reduce(BigInteger.ZERO, (a, b) -> a.add(Optional.ofNullable(b).orElse(BigInteger.ZERO)));
 
-        BigInteger netPay = grossPay.subtract(absentDeduction);
+        BigInteger netDeduction = absentDeduction.add(lateDeduction);
+        BigInteger netPay = grossPay.subtract(netDeduction);
+        netPay = (netPay.compareTo(BigInteger.ZERO) < 0)
+                ? BigInteger.ZERO
+                : netPay;
 
         return MonthlyPayCalculation.builder()
                 .grossPay(grossPay)
                 .absentCount(absentCount)
                 .absentDeduction(absentDeduction)
                 .lateCount(lateCount)
+                .lateDeduction(lateDeduction)
+                .netDeduction(netDeduction)
                 .netPay(netPay)
                 .build();
     }

@@ -22,6 +22,9 @@ public class GetMonthlyPayslipSchemaMapper {
                 .monthlyPayGross(monthlyPayCalculation.getGrossPay())
                 .absentCount(monthlyPayCalculation.getAbsentCount())
                 .absentDeduction(monthlyPayCalculation.getAbsentDeduction())
+                .lateCount(monthlyPayCalculation.getLateCount())
+                .lateDeduction(monthlyPayCalculation.getLateDeduction())
+                .netDeduction(monthlyPayCalculation.getNetDeduction())
                 .monthlyPayNet(monthlyPayCalculation.getNetPay())
                 .build();
     }
