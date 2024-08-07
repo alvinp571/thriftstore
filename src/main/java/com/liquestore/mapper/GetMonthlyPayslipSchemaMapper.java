@@ -42,7 +42,7 @@ public class GetMonthlyPayslipSchemaMapper {
                 .overtimePay(dailyPayCalculation.getOvertimePay())
                 .offPay(dailyPayCalculation.getOffPay())
                 .lateDeduction(dailyPayCalculation.getLateDeduction())
-                .attendanceStatus(attendanceStatus.name())
+                .attendanceStatus(attendanceStatus.getLabelId())
                 .netPay(dailyPayCalculation.getNetPay())
                 .build();
     }
@@ -50,7 +50,7 @@ public class GetMonthlyPayslipSchemaMapper {
     public GetMonthlyPayslipSchema.DailyPayslip mapDailyPayDetail(LocalDate date, AttendanceStatus attendanceStatus) {
         return GetMonthlyPayslipSchema.DailyPayslip.builder()
                 .date(date.toString())
-                .attendanceStatus(attendanceStatus.name())
+                .attendanceStatus(attendanceStatus.getLabelId())
                 .build();
     }
 }

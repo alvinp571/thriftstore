@@ -197,11 +197,16 @@ public class EmployeeService {
 
             if (day == attendanceDay) {
                 DailyPayCalculation dailyPayCalculation = calculateDailyPay(employee, employeePayDetail, attendance);
+                AttendanceStatus attendanceStatus = mapAttendanceStatus(employee, employeePayDetail, attendance,
+                        dailyPayCalculation);
                 var dailyPayDetail = getMonthlyPayslipResponseMapper.mapDailyPayDetail(attendance, dailyPayCalculation,
-                        AttendanceStatus.PRESENT);
+                        attendanceStatus);
                 dailyPayslipList.add(dailyPayDetail);
 
                 index++;
+            }
+            else if (LocalDate.of(year, month, day).getDayOfWeek().getValue() == employee.getOffDay()) {
+                dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.OFF));
             }
             else {
                 dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
@@ -212,7 +217,12 @@ public class EmployeeService {
 
         while (day <= lengthOfMonth) {
             LocalDate date = LocalDate.of(year, month, day);
-            dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
+            if (date.getDayOfWeek().getValue() == employee.getOffDay()) {
+                dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.OFF));
+            }
+            else {
+                dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, AttendanceStatus.ABSENT));
+            }
 
             day++;
         }
@@ -261,6 +271,22 @@ public class EmployeeService {
                 .build();
     }
 
+    private AttendanceStatus mapAttendanceStatus(EmployeeModel employee, EmployeePayDetail employeePayDetail,
+            AbsensiModel attendance, DailyPayCalculation dailyPayCalculation) {
+        LocalTime scheduledClockIn = employee.getJam_masuk().toLocalTime();
+        LocalTime clockIn = attendance.getClockin().toLocalDateTime().toLocalTime();
+        if (clockIn.isAfter(scheduledClockIn)) {
+            return AttendanceStatus.LATE;
+        }
+
+        BigDecimal workHours = new BigDecimal(employeePayDetail.getWorkingHours());
+        if (dailyPayCalculation.getHoursWorked().compareTo(workHours) < 0) {
+            return AttendanceStatus.UNDER_WORK_HOURS;
+        }
+
+        return AttendanceStatus.PRESENT;
+    }
+
     private MonthlyPayCalculation calculateMonthlyPay(List<GetMonthlyPayslipSchema.DailyPayslip> dailyPayslipList) {
         BigInteger grossPay = dailyPayslipList.stream()
                 .map(GetMonthlyPayslipSchema.DailyPayslip::getNetPay)
@@ -268,7 +294,7 @@ public class EmployeeService {
 
         int absentCount = (int) dailyPayslipList.stream()
                 .filter(pd -> AttendanceStatus.ABSENT
-                        .equals(AttendanceStatus.valueOf(pd.getAttendanceStatus())))
+                        .equals(AttendanceStatus.valueOfLabelId(pd.getAttendanceStatus())))
                 .count();
         BigDecimal absentModifier = BigDecimal.valueOf(absentCount)
                 .multiply(BigDecimal.valueOf(0.04));
@@ -278,7 +304,7 @@ public class EmployeeService {
 
         int lateCount = (int) dailyPayslipList.stream()
                 .filter(pd -> AttendanceStatus.LATE
-                        .equals(AttendanceStatus.valueOf(pd.getAttendanceStatus())))
+                        .equals(AttendanceStatus.valueOfLabelId(pd.getAttendanceStatus())))
                 .count();
 
         BigInteger netPay = grossPay.subtract(absentDeduction);
