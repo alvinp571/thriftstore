@@ -1,91 +1,90 @@
-import React, { useEffect, useState } from 'react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import axios from 'axios';
-import { Alert, Box, Grid } from '@mui/material';
-import { useAuth } from './authContext';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import axios from "axios";
+import { Alert, Box, Grid } from "@mui/material";
+import { useAuth } from "./authContext";
+import { useLocation } from "react-router-dom";
 
 const containerStyle = {
-  backgroundColor: 'black',
-  color: 'white',
+  backgroundColor: "black",
+  color: "white",
   borderRadius: 25,
-  boxShadow: '10px 10px 5px grey',
+  boxShadow: "10px 10px 5px grey",
 };
 
 const textfieldStyle = {
   input: {
-    color: 'white',
-    border: '1px solid white',
-    borderRadius: '10px',
+    color: "white",
+    border: "1px solid white",
+    borderRadius: "4px",
   },
   placeholder: {
-    color: 'lightgray',
-  }
+    color: "lightgray",
+  },
 };
 
 const btnLogin = {
   marginTop: 5,
-  justifyContent: 'center',
-  borderRadius: '10px',
-  backgroundColor: '#FE8A01',
-  color: 'black',
-  border: '3px solid black'
+  justifyContent: "center",
+  borderRadius: "10px",
+  backgroundColor: "#FE8A01",
+  color: "black",
+  border: "3px solid black",
 };
 
 function LoginPage() {
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [showSuccess, setShowSuccess] = useState(false);
-  const [msgSuccess, setmsgSuccess] = useState('');
+  const [msgSuccess, setmsgSuccess] = useState("");
   const [showError, setShowError] = useState(false);
   const [msgError, setMsgError] = useState();
-  const [param, setParam] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [param, setParam] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const orderidFromQuery = params.get('orderid');
+  const orderidFromQuery = params.get("orderid");
 
   useEffect(() => {
-    if (orderidFromQuery != null){
+    if (orderidFromQuery != null) {
       setParam(orderidFromQuery);
-    }
-    else{
-      setParam('');
+    } else {
+      setParam("");
     }
   }, [orderidFromQuery]);
 
   useEffect(() => {
-    const storedMessage = localStorage.getItem('berhasilRegister');
+    const storedMessage = localStorage.getItem("berhasilRegister");
     if (storedMessage) {
       setShowSuccess(true);
       setmsgSuccess(storedMessage);
       setTimeout(() => {
         setShowSuccess(false);
       }, 5000);
-      localStorage.removeItem('berhasilRegister')
+      localStorage.removeItem("berhasilRegister");
     }
   }, []);
 
   const validate = () => {
     let tempErrors = {};
-    if (!username){
+    if (!username) {
       tempErrors.username = "Username harus diisi";
     }
-    if (!password){
+    if (!password) {
       tempErrors.password = "password harus diisi";
     }
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()){
+    if (validate()) {
       const formData = new FormData();
       formData.append("username", username);
       formData.append("password", password);
@@ -95,11 +94,10 @@ function LoginPage() {
         console.log(response.data);
         if (response.data.customer) {
           if (orderidFromQuery != null && response.data.cekPhoneOrder) {
-            localStorage.setItem('orderid', orderidFromQuery);
+            localStorage.setItem("orderid", orderidFromQuery);
           }
           login(response.data.customer);
-        }
-        else{
+        } else {
           login(response.data);
         }
       } catch (error) {
@@ -115,29 +113,45 @@ function LoginPage() {
 
   return (
     <>
-      <Container component="main" maxWidth="sm" sx={{marginTop: 10}}>
+      <Container component="main" maxWidth="sm" sx={{ marginTop: 10 }}>
         {showSuccess && (
-          <Alert variant="filled" severity="success" sx={{marginBottom: 5}}>
-            { msgSuccess }
+          <Alert variant="filled" severity="success" sx={{ marginBottom: 5 }}>
+            {msgSuccess}
           </Alert>
         )}
         {showError && (
-          <Alert variant="filled" severity="error" sx={{marginBottom: 5}}>
-            { msgError }
+          <Alert variant="filled" severity="error" sx={{ marginBottom: 5 }}>
+            {msgError}
           </Alert>
         )}
-        <Box sx={{ display: 'flex', flexDirection: 'column', padding: 5, borderRadius: 5}} style={containerStyle}>
-          <Typography component="h1" variant="h4">Login</Typography>
-          <Box sx={{display: 'flex'}}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            padding: 5,
+            borderRadius: 5,
+          }}
+          style={containerStyle}
+        >
+          <Typography component="h1" variant="h4">
+            Login
+          </Typography>
+          <Box sx={{ display: "flex" }}>
             <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
-            <Typography sx={{ color: '#FE8A01' }}>
+            <Typography sx={{ color: "#FE8A01" }}>
               {param ? (
-                <a href={`/register?orderid=${orderidFromQuery}`} style={{ color: '#FE8A01', textDecoration: 'none' }}>
-                  Sign up here
+                <a
+                  href={`/register?orderid=${orderidFromQuery}`}
+                  style={{ color: "#FE8A01", textDecoration: "none" }}
+                >
+                  Register here
                 </a>
               ) : (
-                <a href="/register" style={{ color: '#FE8A01', textDecoration: 'none' }}>
-                  Sign up here
+                <a
+                  href="/register"
+                  style={{ color: "#FE8A01", textDecoration: "none" }}
+                >
+                  Register here
                 </a>
               )}
             </Typography>
@@ -146,13 +160,13 @@ function LoginPage() {
             <Grid item xs={12}>
               <TextField
                 sx={textfieldStyle}
-                className='input'
-                placeholder="Username"
+                className="input"
+                placeholder="Username/ Phone Number/ Email"
                 value={username}
-                autoComplete='off'
+                autoComplete="off"
                 fullWidth
                 helperText={errors.username}
-                FormHelperTextProps={{ sx: { color: 'red' } }}
+                FormHelperTextProps={{ sx: { color: "red" } }}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </Grid>
@@ -164,18 +178,27 @@ function LoginPage() {
                 value={password}
                 fullWidth
                 helperText={errors.password}
-                FormHelperTextProps={{ sx: { color: 'red' } }}
+                FormHelperTextProps={{ sx: { color: "red" } }}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
-              <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
+              <Button style={btnLogin} fullWidth onClick={handleSubmit}>
+                Login
+              </Button>
             </Grid>
           </Grid>
-          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
+          <Typography
+            sx={{ color: "#FE8A01", marginTop: 3, textAlign: "left" }}
+          >
+            <a
+              href="/forgot"
+              style={{ color: "#FE8A01", textDecoration: "none" }}
+            >Forgot Password?</a>
+          </Typography>
         </Box>
-    </Container>
-  </>
+      </Container>
+    </>
   );
 }
 
