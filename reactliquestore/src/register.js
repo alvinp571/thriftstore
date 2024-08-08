@@ -149,8 +149,8 @@ function RegisterPage() {
       } else {
         navigate(`/login?orderid=${orderidFromQuery}`);
       }
-      if (password !== konfirmasiPassword) {
-        setMsgError("password harus sama dengan konfirmasi password");
+      if (password == '') {
+        setMsgError("password harus diisi");
       }
       else {
         try {
@@ -174,7 +174,7 @@ function RegisterPage() {
           setBirthdate('');
           setPhonenumber('');
           // setUsernameIG('');
-          setKonfirmasiPassword('');
+          // setKonfirmasiPassword('');
 
           localStorage.setItem('berhasilRegister', response.data.message);
           if (orderidFromQuery == null){
