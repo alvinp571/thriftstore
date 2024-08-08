@@ -4,21 +4,11 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
-import {
-  Alert,
-  Box,
-  FormControl,
-  Grid,
-  IconButton,
-  Input,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
-} from "@mui/material";
+import { Alert, Box, Grid } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./register.css";
-import logoShow from "./assets/EyeClose.svg"
-import logoHide from "./assets/EyeOpen.svg"
+import logoShow from "./assets/EyeClose.svg";
+import logoHide from "./assets/EyeOpen.svg";
 
 const containerStyle = {
   backgroundColor: "black",
@@ -71,18 +61,14 @@ function RegisterPage() {
 
   const handleClickShowPassword = () => {
     setShowPassword((show) => !show);
-    document.getElementById('show').style.display = 'none'
-    document.getElementById('hide').style.display = 'flex'
+    document.getElementById("show").style.display = "none";
+    document.getElementById("hide").style.display = "flex";
   };
 
   const handleClickHidePassword = () => {
     setShowPassword((show) => !show);
-    document.getElementById('show').style.display = 'flex'
-    document.getElementById('hide').style.display = 'none'
-  };
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
+    document.getElementById("show").style.display = "flex";
+    document.getElementById("hide").style.display = "none";
   };
 
   const validate = () => {
@@ -337,20 +323,22 @@ function RegisterPage() {
             <TextField
               sx={textfieldStyle}
               placeholder="Password"
-              type = {showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               // type="password"
               value={password}
               helperText={errors.password}
               FormHelperTextProps={{ sx: { color: "red" } }}
               fullWidth
               onChange={(e) => setPassword(e.target.value)}
-            >
-              <InputAdornment></InputAdornment>
-            </TextField>
+            ></TextField>
           </Grid>
           <Grid item xs={2} class="noPad">
-          <div class="show" id="show" onClick={handleClickShowPassword}><img src={logoShow}/></div>
-          <div class="hide" id="hide" onClick={handleClickHidePassword}><img src={logoHide}/></div>
+            <div class="show" id="show" onClick={handleClickShowPassword}>
+              <img src={logoShow} />
+            </div>
+            <div class="hide" id="hide" onClick={handleClickHidePassword}>
+              <img src={logoHide} />
+            </div>
           </Grid>
           <Grid item xs={12}>
             <Button style={btnRegister} fullWidth onClick={handleSubmit}>
@@ -359,7 +347,6 @@ function RegisterPage() {
           </Grid>
         </Grid>
       </Box>
-        
     </Container>
   );
 }
