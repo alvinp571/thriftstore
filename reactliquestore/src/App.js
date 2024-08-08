@@ -12,6 +12,7 @@ import { AuthProvider } from "./authContext";
 
 import LoginPage from "./login";
 import RegisterPage from "./register";
+import ForgotPage from "./forgot";
 import PrivateRoute from "./privateRoute";
 
 import ClockInManager from "./manager/clockIn";
@@ -32,7 +33,6 @@ import PengirimanAdmin from "./admin/pengiriman";
 import ReviewOrderDeliveryAdmin from "./admin/reviewOrderDelivery";
 import Live from "./admin/live";
 import Resi from "./admin/resi";
-import ForgotPage from "./forgot";
 
 import ReviewStokSupervisor from "./supervisor/reviewStok";
 import TipeStokSupervisor from "./supervisor/tipeStok";

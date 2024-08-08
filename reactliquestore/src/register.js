@@ -149,49 +149,49 @@ function RegisterPage() {
       } else {
         navigate(`/login?orderid=${orderidFromQuery}`);
       }
-      // if (password !== konfirmasiPassword) {
-      //   setMsgError("password harus sama dengan konfirmasi password");
-      // }
-      // else {
-      //   try {
-      //     const formData = new FormData();
-      //     formData.append('username', username);
-      //     formData.append('password', password);
-      //     formData.append('name', name);
-      //     formData.append('email', email);
-      //     // formData.append('usernameIG', usernameIG);
-      //     formData.append('phonenumber', phonenumber);
-      //     formData.append('birthdate', birthdate);
-      //     console.log([...formData]);
+      if (password !== konfirmasiPassword) {
+        setMsgError("password harus sama dengan konfirmasi password");
+      }
+      else {
+        try {
+          const formData = new FormData();
+          formData.append('username', username);
+          formData.append('password', password);
+          // formData.append('name', name);
+          formData.append('email', email);
+          // formData.append('usernameIG', usernameIG);
+          formData.append('phonenumber', phonenumber);
+          formData.append('birthdate', birthdate);
+          console.log([...formData]);
 
-      //     const response = await axios.post(`${backendUrl}/register`, formData);
-      //     console.log(response.data);
+          const response = await axios.post(`${backendUrl}/register`, formData);
+          console.log(response.data);
 
-      //     setUsername('');
-      //     setPassword('');
-      //     setName('');
-      //     setEmail('');
-      //     setBirthdate('');
-      //     setPhonenumber('');
-      //     // setUsernameIG('');
-      //     setKonfirmasiPassword('');
+          setUsername('');
+          setPassword('');
+          // setName('');
+          setEmail('');
+          setBirthdate('');
+          setPhonenumber('');
+          // setUsernameIG('');
+          setKonfirmasiPassword('');
 
-      //     localStorage.setItem('berhasilRegister', response.data.message);
-      //     if (orderidFromQuery == null){
-      //       navigate('/login');
-      //     } else {
-      //       navigate(`/login?orderid=${orderidFromQuery}`);
-      //     }
-      //   }
-      //   catch (error) {
-      //     console.log(error);
-      //     setShowError(true);
-      //     setMsgError(error.response.data.message);
-      //     setTimeout(() => {
-      //       setShowError(false);
-      //     }, 5000);
-      //   }
-      // }
+          localStorage.setItem('berhasilRegister', response.data.message);
+          if (orderidFromQuery == null){
+            navigate('/login');
+          } else {
+            navigate(`/login?orderid=${orderidFromQuery}`);
+          }
+        }
+        catch (error) {
+          console.log(error);
+          setShowError(true);
+          setMsgError(error.response.data.message);
+          setTimeout(() => {
+            setShowError(false);
+          }, 5000);
+        }
+      }
     }
   };
 
