@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from 'react-router-dom';
-import './App.css';
-import {AuthProvider} from './authContext';
-=======
 import {
   BrowserRouter as Router,
   Route,
@@ -14,7 +9,6 @@ import "./App.css";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AuthProvider } from "./authContext";
->>>>>>> billy
 
 import LoginPage from "./login";
 import RegisterPage from "./register";
