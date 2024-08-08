@@ -6,8 +6,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import "./App.css";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import { LocalizationProvider } from "@mui/x-date-pickers";
+// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AuthProvider } from "./authContext";
 
 import LoginPage from "./login";
@@ -136,6 +136,10 @@ function AppWrapper() {
             element={<GajiKaryawan />}
           />
           <Route
+            path="/manager/karyawan/manageEmployee"
+            element={<ManageEmployee />}
+          />
+          <Route
             path="/manager/stok/reviewStok"
             element={<ReviewStokManager />}
           />
@@ -170,11 +174,11 @@ function AppWrapper() {
 
 function App() {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Router>
-        <AppWrapper />
-      </Router>
-    </LocalizationProvider>
+    // <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <Router>
+      <AppWrapper />
+    </Router>
+    // </LocalizationProvider>
   );
 }
 
