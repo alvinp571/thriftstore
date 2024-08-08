@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import { Alert, Box, Grid } from "@mui/material";
 import { useAuth } from "./authContext";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const containerStyle = {
   backgroundColor: "black",
@@ -190,11 +190,14 @@ function LoginPage() {
           </Grid>
           <Typography
             sx={{ color: "#FE8A01", marginTop: 3, textAlign: "left" }}
+            component={Link} to="/forgot"
           >
-            <a
-              href="/forgot"
+            Forgot Password?
+            {/* <a
+              // component={Link} to="/forgot"
+              // href="/forgot"
               style={{ color: "#FE8A01", textDecoration: "none" }}
-            >Forgot Password?</a>
+            >Forgot Password?</a> */}
           </Typography>
         </Box>
       </Container>
