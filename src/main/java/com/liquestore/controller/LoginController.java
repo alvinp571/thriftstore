@@ -89,7 +89,7 @@ public class LoginController {
             @RequestParam("password") String password,
             @RequestParam("name") String name,
             @RequestParam("email") String email,
-            // @RequestParam("usernameIG") String usernameIG,
+            @RequestParam("usernameIG") String usernameIG,
             @RequestParam("phonenumber") String phonenumber,
             @RequestParam("birthdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthdate) {
         CustomerModel existingUsername = customerRepository.findByUsername(username);
@@ -105,7 +105,7 @@ public class LoginController {
         addCustomer.setPassword(passwordEncoder.encode(password));
         addCustomer.setName(name);
         addCustomer.setEmail(email);
-        // addCustomer.setUsernameig(usernameIG);
+        addCustomer.setUsernameig(usernameIG);
         addCustomer.setPhonenumber(phonenumber);
         addCustomer.setBirthdate(birthdate);
         AccessRightModel accessRightModel = new AccessRightModel(4);
