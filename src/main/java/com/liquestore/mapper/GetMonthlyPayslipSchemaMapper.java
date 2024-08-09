@@ -7,9 +7,11 @@ import com.liquestore.dto.employee.MonthlyPayCalculation;
 import com.liquestore.model.AbsensiModel;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GetMonthlyPayslipSchemaMapper {
@@ -47,6 +49,20 @@ public class GetMonthlyPayslipSchemaMapper {
                 .lateDeduction(dailyPayCalculation.getLateDeduction())
                 .attendanceStatus(attendanceStatus.getLabelId())
                 .netPay(dailyPayCalculation.getNetPay())
+                .build();
+    }
+
+    public GetMonthlyPayslipSchema.DailyPayslip mapDailyPayDetail(LocalDate date, Optional<LocalTime> clockIn,
+            Optional<LocalTime> clockOut, AttendanceStatus attendanceStatus) {
+        return GetMonthlyPayslipSchema.DailyPayslip.builder()
+                .date(date.toString())
+                .clockIn(clockIn
+                        .map(TIME_FORMAT::format)
+                        .orElse("00:00"))
+                .clockOut(clockOut
+                        .map(TIME_FORMAT::format)
+                        .orElse("00:00"))
+                .attendanceStatus(attendanceStatus.getLabelId())
                 .build();
     }
 
