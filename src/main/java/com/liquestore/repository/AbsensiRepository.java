@@ -11,5 +11,5 @@ public interface AbsensiRepository extends JpaRepository<AbsensiModel, Integer> 
 
     List<AbsensiModel> findByEmployeeidAndTodaydateBetweenOrderByTodaydateAsc(int employeeId, Date start, Date end);
 
-    Optional<AbsensiModel> findByTodaydate(Date todaydate);
+    Optional<AbsensiModel> findByEmployeeidAndTodaydate(int employeeId, Date todaydate);
 }

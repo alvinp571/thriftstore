@@ -10,11 +10,13 @@ import com.liquestore.model.ItemModel;
 import com.liquestore.model.OrdersModel;
 import com.liquestore.model.TypeModel;
 import com.liquestore.repository.AbsensiRepository;
+import com.liquestore.repository.EmployeeRepository;
 import com.liquestore.repository.ItemRepository;
 import com.liquestore.repository.OrdersRepository;
 import com.liquestore.repository.TypeRepository;
 import com.liquestore.service.FileStorageService;
 import com.liquestore.service.LoginService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,6 +48,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/backend/supervisor")
 @CrossOrigin
+@RequiredArgsConstructor
 public class SupervisorController {
     private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
     boolean cekPasscode = false;
@@ -67,6 +70,8 @@ public class SupervisorController {
     @Autowired
     private OrdersRepository ordersRepository;
 
+    private final EmployeeRepository employeeRepository;
+
     @PostMapping("/clockin")
     public ResponseEntity<?> clockin(@RequestBody String passcode) throws JsonProcessingException {
         cekPasscode = false;
@@ -74,7 +79,7 @@ public class SupervisorController {
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
         logger.info("inputan passcode " + extractedPasscode);
-        List<EmployeeModel> getPasscode = loginService.getEmployeesByAccessRightId(1);
+        List<EmployeeModel> getPasscode = employeeRepository.findAll();
         for (EmployeeModel employeeModel : getPasscode) {
             String nomorwa = employeeModel.getPhonenumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
@@ -135,7 +140,7 @@ public class SupervisorController {
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
         logger.info("inputan passcode " + extractedPasscode);
-        List<EmployeeModel> getPasscode = loginService.getEmployeesByAccessRightId(1);
+        List<EmployeeModel> getPasscode = employeeRepository.findAll();
         for (EmployeeModel employeeModel : getPasscode) {
             String nomorwa = employeeModel.getPhonenumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);

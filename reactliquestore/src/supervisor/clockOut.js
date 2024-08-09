@@ -117,7 +117,7 @@ const ClockOutSupervisor = () => {
     // Jika sudah mencapai 4 digit, lakukan posting data
     if (updatedDigitCount === 4) {
       try {
-        const response = await axios.post('http://localhost:8080/supervisor/clockout', { passcode: updatedPasscode });
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/supervisor/clockout`, { passcode: updatedPasscode });
         console.log(response.data);
         setMsgSuccess(response.data.message);
         setShowSuccess(true);

@@ -1,14 +1,8 @@
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  useNavigate,
-  Navigate,
-} from "react-router-dom";
+import {HashRouter as Router, Navigate, Route, Routes, useNavigate,} from "react-router-dom";
 import "./App.css";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { AuthProvider } from "./authContext";
+import {LocalizationProvider} from "@mui/x-date-pickers";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {AuthProvider} from "./authContext";
 
 import LoginPage from "./login";
 import RegisterPage from "./register";
@@ -52,114 +46,118 @@ function AppWrapper() {
   return (
     <AuthProvider navigate={navigate}>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot" element={<ForgotPage />} />
+        <Route path="/" element={<Navigate to="/login"/>}/>
+        <Route path="/login" element={<LoginPage/>}/>
+        <Route path="/register" element={<RegisterPage/>}/>
+        <Route path="/forgot" element={<ForgotPage/>}/>
 
         {/* ADMIN */}
-        <Route element={<PrivateRoute roles={[1]} />}>
-          <Route path="/admin/stok/reviewStok" element={<ReviewStokAdmin />} />
-          <Route path="/admin/stok/tipeBarang" element={<TipeStokAdmin />} />
-          <Route path="/admin/orderDelivery/live" element={<Live />} />
-          <Route path="/admin/orderDelivery/no_resi" element={<Resi />} />
+        <Route element={<PrivateRoute roles={[1]}/>}>
+          <Route path="/admin/stok/reviewStok" element={<ReviewStokAdmin/>}/>
+          <Route path="/admin/stok/tipeBarang" element={<TipeStokAdmin/>}/>
+          <Route path="/admin/orderDelivery/live" element={<Live/>}/>
+          <Route path="/admin/orderDelivery/no_resi" element={<Resi/>}/>
           <Route
             path="/admin/orderDelivery/pemesanan"
-            element={<PemesananAdmin />}
+            element={<PemesananAdmin/>}
           />
           <Route
             path="/admin/orderDelivery/pengiriman"
-            element={<PengirimanAdmin />}
+            element={<PengirimanAdmin/>}
           />
           <Route
             path="/admin/orderDelivery/reviewOrderDelivery"
-            element={<ReviewOrderDeliveryAdmin />}
+            element={<ReviewOrderDeliveryAdmin/>}
           />
         </Route>
 
         {/* SUPERVISOR */}
-        <Route element={<PrivateRoute roles={[2]} />}>
+        <Route element={<PrivateRoute roles={[2]}/>}>
           <Route
             path="/supervisor/karyawan/presensi"
-            element={<PresensiSupervisor />}
+            element={<PresensiSupervisor/>}
           />
           <Route
             path="/supervisor/karyawan/presensi/clockin"
-            element={<ClockInSupervisor />}
+            element={<ClockInSupervisor/>}
           />
           <Route
             path="/supervisor/karyawan/presensi/clockout"
-            element={<ClockOutSupervisor />}
+            element={<ClockOutSupervisor/>}
           />
           <Route
             path="/supervisor/stok/reviewStok"
-            element={<ReviewStokSupervisor />}
+            element={<ReviewStokSupervisor/>}
           />
           <Route
             path="/supervisor/stok/tipeBarang"
-            element={<TipeStokSupervisor />}
+            element={<TipeStokSupervisor/>}
           />
           <Route
             path="/supervisor/orderDelivery/pemesanan"
-            element={<PemesananSupervisor />}
+            element={<PemesananSupervisor/>}
           />
           <Route
             path="/supervisor/orderDelivery/pengiriman"
-            element={<PengirimanSupervisor />}
+            element={<PengirimanSupervisor/>}
           />
           <Route
             path="/supervisor/orderDelivery/reviewOrderDelivery"
-            element={<ReviewOrderDeliverySupervisor />}
+            element={<ReviewOrderDeliverySupervisor/>}
           />
         </Route>
 
         {/* MANAGER */}
-        <Route element={<PrivateRoute roles={[3]} />}>
+        <Route element={<PrivateRoute roles={[3]}/>}>
           <Route
             path="/manager/karyawan/presensi"
-            element={<PresensiManager />}
+            element={<PresensiManager/>}
           />
           <Route
             path="/manager/karyawan/presensi/clockin"
-            element={<ClockInManager />}
+            element={<ClockInManager/>}
           />
           <Route
             path="/manager/karyawan/presensi/clockout"
-            element={<ClockOutManager />}
+            element={<ClockOutManager/>}
           />
           <Route
             path="/manager/karyawan/dataKaryawan"
-            element={<DataKaryawan />}
+            element={<DataKaryawan/>}
           />
           <Route
             path="/manager/karyawan/gajiKaryawan"
-            element={<GajiKaryawan />}
+            element={<GajiKaryawan/>}
+          />
+          <Route
+            path="/manager/karyawan/manageEmployee"
+            element={<ManageEmployee/>}
           />
           <Route
             path="/manager/stok/reviewStok"
-            element={<ReviewStokManager />}
+            element={<ReviewStokManager/>}
           />
           <Route
             path="/manager/stok/tipeBarang"
-            element={<TipeStokManager />}
+            element={<TipeStokManager/>}
           />
           <Route
             path="/manager/orderDelivery/pengiriman"
-            element={<PengirimanManager />}
+            element={<PengirimanManager/>}
           />
           <Route
             path="/manager/orderDelivery/reviewOrderDelivery"
-            element={<ReviewOrderDeliveryManager />}
+            element={<ReviewOrderDeliveryManager/>}
           />
         </Route>
 
         {/* CUSTOMER */}
-        <Route element={<PrivateRoute roles={[4]} />}>
-          <Route path="/customer/dashboard" element={<DashboardCustomer />} />
-          <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
-          <Route path="/customer/paymentPage" element={<PaymentPage />} />
+        <Route element={<PrivateRoute roles={[4]}/>}>
+          <Route path="/customer/dashboard" element={<DashboardCustomer/>}/>
+          <Route path="/customer/checkoutPage" element={<CheckoutPage/>}/>
+          <Route path="/customer/paymentPage" element={<PaymentPage/>}/>
         </Route>
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout" element={<CheckoutPage/>}/>
         {/* <Route path="/customer/dashboard" element={<DashboardCustomer />} />
         <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
         <Route path="/customer/paymentPage" element={<PaymentPage />} /> */}
@@ -172,7 +170,7 @@ function App() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Router>
-        <AppWrapper />
+        <AppWrapper/>
       </Router>
     </LocalizationProvider>
   );
