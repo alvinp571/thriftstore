@@ -5,7 +5,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
 import { Alert, Box, Grid } from "@mui/material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./register.css";
 import logoShow from "./assets/EyeClose.svg";
 import logoHide from "./assets/EyeOpen.svg";
@@ -218,19 +218,25 @@ function RegisterPage() {
           <Typography>Already have an account?</Typography>&nbsp;&nbsp;&nbsp;
           <Typography sx={{ color: "#FE8A01" }}>
             {param ? (
-              <a
-                href={`/login?orderid=${orderidFromQuery}`}
-                style={{ color: "#FE8A01", textDecoration: "none" }}
-              >
-                Login here
-              </a>
+              // <a
+              //   href={`/login?orderid=${orderidFromQuery}`}
+              //   style={{ color: "#FE8A01", textDecoration: "none" }}
+              // >
+              //   Login here
+              // </a>
+              <Link
+              style={{ color: "#FE8A01", textDecoration: "none" }}
+              to={`/login?orderid=${orderidFromQuery}`}
+            >
+              Login here
+            </Link>
             ) : (
-              <a
-                href="/login"
-                style={{ color: "#FE8A01", textDecoration: "none" }}
-              >
-                Login here
-              </a>
+              <Link
+              style={{ color: "#FE8A01", textDecoration: "none" }}
+              to={"/login"}
+            >
+              Login here
+            </Link>
             )}
           </Typography>
         </Box>

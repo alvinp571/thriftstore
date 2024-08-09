@@ -1,5 +1,6 @@
 import { Button, Grid, TextField, Typography } from "@mui/material";
 import { Box, Container } from "@mui/system";
+import { Link } from "react-router-dom";
 
 const containerStyle = {
   backgroundColor: "black",
@@ -74,11 +75,11 @@ function ForgotPage() {
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <a href="/login" style={{ color: "#FE8A01", textDecoration: "none" }}>
+              <Link to={"/login"} style={{ color: "#FE8A01", textDecoration: "none" }}>
                 <Button style={btnLoginInvert} fullWidth>
                   Back
                 </Button>
-              </a>
+              </Link>
             </Grid>
             <Grid item xs={6}>
               <Button style={btnLogin} fullWidth>

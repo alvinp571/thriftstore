@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import { Alert, Box, Grid } from "@mui/material";
 import { useAuth } from "./authContext";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const containerStyle = {
   backgroundColor: "black",
@@ -140,19 +140,25 @@ function LoginPage() {
             <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
             <Typography sx={{ color: "#FE8A01" }}>
               {param ? (
-                <a
-                  href={`/register?orderid=${orderidFromQuery}`}
+                // <a
+                //   href={`/register?orderid=${orderidFromQuery}`}
+                //   style={{ color: "#FE8A01", textDecoration: "none" }}
+                // >
+                //   Register here
+                // </a>
+                <Link
                   style={{ color: "#FE8A01", textDecoration: "none" }}
+                  to={`/register?orderid=${orderidFromQuery}`}
                 >
                   Register here
-                </a>
+                </Link>
               ) : (
-                <a
-                  href="/register"
+                <Link
                   style={{ color: "#FE8A01", textDecoration: "none" }}
+                  to={"/register"}
                 >
                   Register here
-                </a>
+                </Link>
               )}
             </Typography>
           </Box>
@@ -189,12 +195,16 @@ function LoginPage() {
             </Grid>
           </Grid>
           <Typography
-            sx={{ color: "#FE8A01", marginTop: 3, textAlign: "left" }}
+            sx={{
+              color: "#FE8A01",
+              marginTop: 3,
+              textAlign: "left",
+              textDecoration: "none",
+            }}
+            component={Link}
+            to="/forgot"
           >
-            <a
-              href="/forgot"
-              style={{ color: "#FE8A01", textDecoration: "none" }}
-            >Forgot Password?</a>
+            Forgot Password?
           </Typography>
         </Box>
       </Container>
