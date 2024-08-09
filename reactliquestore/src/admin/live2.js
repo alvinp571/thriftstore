@@ -110,6 +110,7 @@ export default function Live() {
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
   const getusername = auth.user ? auth.user.username : "";
+  const [itemsCount, setItemsCount] = useState(0);
 
   const validate = () => {
     let tempErrors = {};
@@ -286,6 +287,16 @@ export default function Live() {
     logout();
   };
 
+  const handleAddItem = () => {
+    setItemsCount(itemsCount + 1);
+  };
+
+  const handleRemoveItem = () => {
+    if(itemsCount != 0){
+      setItemsCount(itemsCount - 1);
+    }
+  };
+
   const drawerWidth = 300;
 
   return (
@@ -387,23 +398,31 @@ export default function Live() {
             Input Pemesanan live
           </Typography>
           <FormControl>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Typography>Nomor WA *</Typography>
-                <TextField
-                  fullWidth
-                  type="number"
-                  autoComplete="off"
-                  value={PhoneNumber}
-                  error={!!errors.PhoneNumber}
-                  helperText={errors.PhoneNumber}
-                  FormHelperTextProps={{ sx: { color: "red" } }}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography>Pilih Warna *</Typography>
-                <Autocomplete
+            {Array(itemsCount + 1)
+              .fill()
+              .map((_, index) => (
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography>Nomor WA *</Typography>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      autoComplete="off"
+                      value={PhoneNumber}
+                      error={!!errors.PhoneNumber}
+                      helperText={errors.PhoneNumber}
+                      FormHelperTextProps={{ sx: { color: "red" } }}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={8}>
+                    <Typography>ITEM {index + 1}</Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography>Kode Warna *</Typography>
+                    {/* <Autocomplete
                   fullWidth
                   options={optColour}
                   getOptionLabel={(option) => option.label}
@@ -414,60 +433,196 @@ export default function Live() {
                   )}
                   error={!!errors.colourOrder}
                   onChange={handleAutocompleteColourChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography>Kode Pemesanan *</Typography>
-                <TextField
-                  fullWidth
-                  type="number"
-                  inputProps={{ min: "1", inputMode: "numeric" }}
-                  autoComplete="off"
-                  value={Orderid}
-                  error={!!errors.Orderid}
-                  helperText={errors.Orderid}
-                  FormHelperTextProps={{ sx: { color: "red" } }}
-                  onChange={(e) => setOrderid(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography>Tipe Barang * (Nama - Varian)</Typography>
-                <Autocomplete
-                  fullWidth
-                  options={optTipe}
-                  getOptionLabel={(option) =>
-                    option.name + " - " + option.varian
-                  }
-                  getOptionSelected={(option, value) => option.value === value}
-                  renderInput={(params) => <TextField {...params} />}
-                  value={optTipe.find((option) => option.value === TypeCode)}
-                  error={!!errors.TypeCode}
-                  onChange={handleAutocompleteTypeChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography>Harga *</Typography>
-                <NumericFormat
-                  fullWidth
-                  autoComplete="off"
-                  value={TotalPrice}
-                  onValueChange={(values) => setTotalPrice(values.floatValue)}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  customInput={TextField}
-                  error={!!errors.TotalPrice}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">Rp</InputAdornment>
-                    ),
+                /> */}
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#8FC0E9",
+                        "&:hover": {
+                          bgcolor: "#698ead",
+                        },
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#549E0D",
+                        "&:hover": {
+                          bgcolor: "#3c7407",
+                        },
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#fa6e04",
+                        "&:hover": {
+                          bgcolor: "#ba5002",
+                        },
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#CA7CF1",
+                        "&:hover": {
+                          bgcolor: "#af6bd2",
+                        },
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#E990CA",
+                        "&:hover": {
+                          bgcolor: "#ad6a95",
+                        },
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#ffffff",
+                        "&:hover": {
+                          bgcolor: "#bebebe",
+                        },
+                        border: "1px solid black",
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#636363",
+                        "&:hover": {
+                          bgcolor: "#000000",
+                        },
+                      }}
+                    ></Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography>Kode Pemesanan *</Typography>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      inputProps={{ min: "1", inputMode: "numeric" }}
+                      autoComplete="off"
+                      value={Orderid}
+                      error={!!errors.Orderid}
+                      helperText={errors.Orderid}
+                      FormHelperTextProps={{ sx: { color: "red" } }}
+                      onChange={(e) => setOrderid(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography>Kode Barang</Typography>
+                    <Autocomplete
+                      fullWidth
+                      options={optTipe}
+                      getOptionLabel={(option) =>
+                        option.name + " - " + option.varian
+                      }
+                      getOptionSelected={(option, value) =>
+                        option.value === value
+                      }
+                      renderInput={(params) => <TextField {...params} />}
+                      value={optTipe.find(
+                        (option) => option.value === TypeCode
+                      )}
+                      error={!!errors.TypeCode}
+                      onChange={handleAutocompleteTypeChange}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography>Harga *</Typography>
+                    <NumericFormat
+                      fullWidth
+                      autoComplete="off"
+                      value={TotalPrice}
+                      onValueChange={(values) =>
+                        setTotalPrice(values.floatValue)
+                      }
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      customInput={TextField}
+                      error={!!errors.TotalPrice}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">Rp</InputAdornment>
+                        ),
+                      }}
+                      variant="outlined"
+                    />
+                    {!!errors.TotalPrice && (
+                      <FormHelperText error sx={{ color: "red" }}>
+                        {errors.TotalPrice}
+                      </FormHelperText>
+                    )}
+                  </Grid>
+                </Grid>
+              ))}
+            <Grid container spacing={3}>
+            <Grid
+                item
+                xs={6}
+                sx={{
+                  // color: "#FE8A01",
+                  textAlign: "left",
+                  textDecoration: "none",
+                }}
+                style={{
+                  marginTop: '40px',
+                }}
+              >
+                <Typography
+                  style={{
+                    cursor: "pointer",
                   }}
-                  variant="outlined"
-                />
-                {!!errors.TotalPrice && (
-                  <FormHelperText error sx={{ color: "red" }}>
-                    {errors.TotalPrice}
-                  </FormHelperText>
-                )}
+                  onClick={handleRemoveItem}
+                >
+                  - Remove Item
+                </Typography>
+              </Grid>
+              <Grid
+                item
+                xs={6}
+                sx={{
+                  // color: "#FE8A01",
+                  textAlign: "right",
+                  textDecoration: "none",
+                }}
+                style={{
+                  marginTop: '40px',
+                }}
+              >
+                <Typography
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={handleAddItem}
+                >
+                  + Add More Item
+                </Typography>
               </Grid>
               {checkoutLink && (
                 <>
@@ -489,12 +644,30 @@ export default function Live() {
                   </Grid>
                 </>
               )}
-              <Grid item xs={12}>
+              <Grid item xs={4}>
+                <Button
+                  variant="contained"
+                  // onClick={handleSubmit}
+                  fullWidth
+                  style={{
+                    backgroundColor: "grey",
+                    color: "white",
+                    border: "solid 2px black",
+                  }}
+                >
+                  Ringkasan Order
+                </Button>
+              </Grid>
+              <Grid item xs={8}>
                 <Button
                   variant="contained"
                   onClick={handleSubmit}
                   fullWidth
-                  style={{ backgroundColor: "black", color: "white" }}
+                  style={{
+                    backgroundColor: "black",
+                    color: "white",
+                    border: "solid 2px black",
+                  }}
                 >
                   Submit
                 </Button>
