@@ -43,6 +43,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -141,7 +142,8 @@ public class EmployeeService {
     public UpdateEmployeeAttendanceSchema updateEmployeeAttendance(int employeeId,
             UpdateEmployeeAttendanceRequest requestBody) {
         LocalDate attendanceDate = LocalDate.parse(requestBody.getDate());
-        AbsensiModel attendance = absensiRepository.findByTodaydate(Date.valueOf(attendanceDate))
+        AbsensiModel attendance = absensiRepository
+                .findByEmployeeidAndTodaydate(employeeId, Date.valueOf(attendanceDate))
                 .orElse(AbsensiModel.builder()
                         .employeeid(employeeId)
                         .todaydate(Date.valueOf(attendanceDate))
@@ -195,13 +197,26 @@ public class EmployeeService {
             int attendanceDay = LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault())
                     .getDayOfMonth();
 
-            if (day == attendanceDay) {
+            var completeWorkDay = !Objects.isNull(attendance.getClockin()) && !Objects.isNull(attendance.getClockout());
+            var partialWorkDay = !Objects.isNull(attendance.getClockin()) || !Objects.isNull(attendance.getClockout());
+            if (day == attendanceDay && completeWorkDay) {
                 DailyPayCalculation dailyPayCalculation = calculateDailyPay(employee, employeePayDetail, attendance);
                 AttendanceStatus attendanceStatus = mapAttendanceStatus(employee, employeePayDetail, attendance,
                         dailyPayCalculation);
                 var dailyPayDetail = getMonthlyPayslipResponseMapper.mapDailyPayDetail(attendance, dailyPayCalculation,
                         attendanceStatus);
                 dailyPayslipList.add(dailyPayDetail);
+
+                index++;
+            }
+            else if (day == attendanceDay && partialWorkDay) {
+                Optional<LocalTime> clockIn = Optional.ofNullable(attendance.getClockin())
+                        .map(c -> c.toLocalDateTime().toLocalTime());
+                Optional<LocalTime> clockOut = Optional.ofNullable(attendance.getClockout())
+                        .map(c -> c.toLocalDateTime().toLocalTime());
+
+                dailyPayslipList.add(getMonthlyPayslipResponseMapper.mapDailyPayDetail(date, clockIn, clockOut,
+                        AttendanceStatus.PRESENT));
 
                 index++;
             }
@@ -232,6 +247,11 @@ public class EmployeeService {
 
     private DailyPayCalculation calculateDailyPay(EmployeeModel employee, EmployeePayDetail employeePayDetail,
             AbsensiModel attendance) {
+        if (Objects.isNull(attendance.getClockin()) || Objects.isNull(attendance.getClockout())) {
+            return DailyPayCalculation.builder()
+                    .build();
+        }
+
         LocalDate date = LocalDate.ofInstant(attendance.getTodaydate().toInstant(), ZoneId.systemDefault());
         int dayOfWeek = date.getDayOfWeek().getValue();
 
@@ -302,6 +322,10 @@ public class EmployeeService {
 
     private AttendanceStatus mapAttendanceStatus(EmployeeModel employee, EmployeePayDetail employeePayDetail,
             AbsensiModel attendance, DailyPayCalculation dailyPayCalculation) {
+        if (Objects.isNull(attendance.getClockin()) || Objects.isNull(attendance.getClockout())) {
+            return AttendanceStatus.PRESENT;
+        }
+
         LocalTime scheduledClockIn = employee.getJam_masuk().toLocalTime();
         LocalTime clockIn = attendance.getClockin().toLocalDateTime().toLocalTime();
         if (clockIn.isAfter(scheduledClockIn)) {

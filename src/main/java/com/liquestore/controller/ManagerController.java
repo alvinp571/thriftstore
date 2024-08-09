@@ -84,7 +84,7 @@ public class ManagerController {
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
         logger.info("inputan passcode " + extractedPasscode);
-        List<EmployeeModel> getPasscode = loginService.getEmployeesByAccessRightId(1);
+        List<EmployeeModel> getPasscode = employeeRepository.findAll();
         for (EmployeeModel employeeModel : getPasscode) {
             String nomorwa = employeeModel.getPhonenumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
@@ -145,7 +145,7 @@ public class ManagerController {
         JsonNode jsonNode = objectMapper.readTree(passcode);
         String extractedPasscode = jsonNode.get("passcode").asText();
         logger.info("inputan passcode " + extractedPasscode);
-        List<EmployeeModel> getPasscode = loginService.getEmployeesByAccessRightId(1);
+        List<EmployeeModel> getPasscode = employeeRepository.findAll();
         for (EmployeeModel employeeModel : getPasscode) {
             String nomorwa = employeeModel.getPhonenumber();
             String lastFourDigits = nomorwa.substring(nomorwa.length() - 4);
