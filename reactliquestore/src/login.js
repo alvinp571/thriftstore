@@ -190,14 +190,11 @@ function LoginPage() {
           </Grid>
           <Typography
             sx={{ color: "#FE8A01", marginTop: 3, textAlign: "left" }}
-            component={Link} to="/forgot"
           >
             Forgot Password?
-            {/* <a
-              // component={Link} to="/forgot"
-              // href="/forgot"
+            <a
               style={{ color: "#FE8A01", textDecoration: "none" }}
-            >Forgot Password?</a> */}
+            >Forgot Password?</a>
           </Typography>
         </Box>
       </Container>
