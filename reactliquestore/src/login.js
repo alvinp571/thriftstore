@@ -7,6 +7,8 @@ import axios from "axios";
 import { Alert, Box, Grid } from "@mui/material";
 import { useAuth } from "./authContext";
 import { Link, useLocation } from "react-router-dom";
+import logoShow from "./assets/EyeClose.svg";
+import logoHide from "./assets/EyeOpen.svg";
 
 const containerStyle = {
   backgroundColor: "black",
@@ -49,6 +51,20 @@ function LoginPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const orderidFromQuery = params.get("orderid");
+
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword((show) => !show);
+    document.getElementById("show").style.display = "none";
+    document.getElementById("hide").style.display = "flex";
+  };
+
+  const handleClickHidePassword = () => {
+    setShowPassword((show) => !show);
+    document.getElementById("show").style.display = "flex";
+    document.getElementById("hide").style.display = "none";
+  };
 
   useEffect(() => {
     if (orderidFromQuery != null) {
@@ -176,17 +192,25 @@ function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={10}>
               <TextField
                 sx={textfieldStyle}
                 placeholder="Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 fullWidth
                 helperText={errors.password}
                 FormHelperTextProps={{ sx: { color: "red" } }}
                 onChange={(e) => setPassword(e.target.value)}
               />
+            </Grid>
+            <Grid item xs={2} class="noPad">
+              <div class="show" id="show" onClick={handleClickShowPassword}>
+                <img src={logoShow} />
+              </div>
+              <div class="hide" id="hide" onClick={handleClickHidePassword}>
+                <img src={logoHide} />
+              </div>
             </Grid>
             <Grid item xs={12}>
               <Button style={btnLogin} fullWidth onClick={handleSubmit}>
