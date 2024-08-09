@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import {
   BrowserRouter as Router,
   Route,
@@ -9,6 +10,11 @@ import "./App.css";
 // import { LocalizationProvider } from "@mui/x-date-pickers";
 // import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AuthProvider } from "./authContext";
+=======
+import {BrowserRouter as Router, Route, Routes, useNavigate, Navigate} from 'react-router-dom';
+import './App.css';
+import {AuthProvider} from './authContext';
+>>>>>>> Stashed changes
 
 import LoginPage from "./login";
 import RegisterPage from "./register";
