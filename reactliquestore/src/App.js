@@ -24,6 +24,7 @@ import PemesananAdmin from './admin/pemesanan';
 import PengirimanAdmin from './admin/pengiriman';
 import ReviewOrderDeliveryAdmin from './admin/reviewOrderDelivery';
 import Live from './admin/live';
+import Live2 from './admin/live2';
 import Resi from './admin/resi';
 
 import ReviewStokSupervisor from './supervisor/reviewStok';
@@ -48,6 +49,7 @@ function AppWrapper() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot" element={<ForgotPage />} />
+        <Route path="/admin/orderDelivery/live2" element={<Live2/>}/>
 
         {/* ADMIN */}
         <Route element={<PrivateRoute roles={[1]}/>}>
